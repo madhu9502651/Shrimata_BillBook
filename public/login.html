@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Shrimata BillBook</title>
+  <link href="/output.css" rel="stylesheet">
+</head>
+<body class="h-screen w-screen flex items-center justify-center bg-slate-100">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+    <h1 class="text-2xl font-bold mb-6 text-center text-slate-800">Login</h1>
+    <form id="login-form" class="flex flex-col gap-4">
+      <input type="text" id="username" placeholder="Username" class="input-field border px-3 py-2 rounded" required>
+      <input type="password" id="password" placeholder="Password" class="input-field border px-3 py-2 rounded" required>
+      <button type="submit" class="btn-primary py-2 rounded text-white font-semibold">Login</button>
+    </form>
+    <div id="login-error" class="text-red-600 mt-4 text-center hidden"></div>
+  </div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          alert('Login error: ' + (errData.error || 'Invalid credentials'));
+          throw new Error(errData.error || 'Invalid credentials');
+        }
+        const data = await response.json();
+        // Save token and user info to localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/';
+      } catch (err) {
+        document.getElementById('login-error').textContent = err.message;
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

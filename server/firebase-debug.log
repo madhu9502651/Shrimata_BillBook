@@ -1,0 +1,104 @@
+[debug] [2026-01-20T05:39:38.298Z] ----------------------------------------------------------------------
+[debug] [2026-01-20T05:39:38.299Z] Command:       /usr/local/bin/node /usr/local/bin/firebase deploy
+[debug] [2026-01-20T05:39:38.300Z] CLI Version:   15.3.1
+[debug] [2026-01-20T05:39:38.300Z] Platform:      darwin
+[debug] [2026-01-20T05:39:38.300Z] Node Version:  v24.12.0
+[debug] [2026-01-20T05:39:38.300Z] Time:          Tue Jan 20 2026 11:09:38 GMT+0530 (India Standard Time)
+[debug] [2026-01-20T05:39:38.300Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-20T05:39:38.540Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-20T05:39:38.540Z] > authorizing via signed-in user (madhupodutur108@gmail.com)
+[debug] [2026-01-20T05:39:38.540Z] [iam] checking project shrimatabillbook for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-01-20T05:39:38.540Z] Checked if tokens are valid: false, expires at: 1768848423669
+[debug] [2026-01-20T05:39:38.540Z] Checked if tokens are valid: false, expires at: 1768848423669
+[debug] [2026-01-20T05:39:38.540Z] > refreshing access token with scopes: []
+[debug] [2026-01-20T05:39:38.541Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-20T05:39:38.541Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-20T05:39:38.831Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-20T05:39:38.831Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-20T05:39:38.840Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/shrimatabillbook:testIamPermissions [none]
+[debug] [2026-01-20T05:39:38.840Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/shrimatabillbook:testIamPermissions x-goog-quota-user=projects/shrimatabillbook
+[debug] [2026-01-20T05:39:38.840Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/shrimatabillbook:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-01-20T05:39:40.522Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/shrimatabillbook:testIamPermissions 200
+[debug] [2026-01-20T05:39:40.522Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/shrimatabillbook:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-01-20T05:39:40.522Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:40.523Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:40.523Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/shrimatabillbook [none]
+[debug] [2026-01-20T05:39:41.081Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/shrimatabillbook 200
+[debug] [2026-01-20T05:39:41.081Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/shrimatabillbook {"projectId":"shrimatabillbook","projectNumber":"601854819324","displayName":"ShrimataBillBook","name":"projects/shrimatabillbook","resources":{"hostingSite":"shrimatabillbook"},"state":"ACTIVE","etag":"1_4bc0e044-ec38-48f0-87f7-c7d76f1427be"}
+[info] 
+[info] === Deploying to 'shrimatabillbook'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-01-20T05:39:41.085Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:41.085Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:41.085Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions [none]
+[debug] [2026-01-20T05:39:41.085Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-01-20T05:39:43.167Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions 200
+[debug] [2026-01-20T05:39:43.167Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions {"name":"projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[shrimatabillbook]: beginning deploy... 
+[info] i  hosting[shrimatabillbook]: found 1 files in y 
+[debug] [2026-01-20T05:39:43.179Z] [hosting] uploading with 200 concurrency
+[debug] [2026-01-20T05:39:43.180Z] [hosting] hash cache [eQ] not populated
+[debug] [2026-01-20T05:39:43.184Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:43.184Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:43.185Z] [hosting] hash cache [eQ] stored for 1 files
+[debug] [2026-01-20T05:39:43.185Z] [hosting][hash queue][FINAL] {"max":3,"min":3,"avg":3,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":4}
+[debug] [2026-01-20T05:39:43.185Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576:populateFiles [none]
+[debug] [2026-01-20T05:39:43.185Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576:populateFiles {"files":{"/index.html":"cbffe0192afde3d718a6e11fb4c9f7acf77cf3d2334c864f1f761d0628dccd45"}}
+[debug] [2026-01-20T05:39:43.596Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576:populateFiles 200
+[debug] [2026-01-20T05:39:43.596Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576:populateFiles {"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/shrimatabillbook/versions/6742490dd7eb8576/files"}
+[debug] [2026-01-20T05:39:43.596Z] [hosting][populate queue][FINAL] {"max":412,"min":412,"avg":412,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":412}
+[debug] [2026-01-20T05:39:43.596Z] [hosting] uploads queued: 0
+[debug] [2026-01-20T05:39:43.596Z] [hosting][upload queue][FINAL] {"max":0,"min":9999999999,"avg":0,"active":0,"complete":0,"success":0,"errored":0,"retried":0,"total":0,"elapsed":1768887583596}
+[info] ✔  hosting[shrimatabillbook]: file upload complete 
+[debug] [2026-01-20T05:39:43.600Z] [hosting] deploy completed after 430ms
+[debug] [2026-01-20T05:39:43.600Z] [
+  {
+    "config": {
+      "public": "y",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "site": "shrimatabillbook"
+    },
+    "version": "projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576"
+  }
+]
+[info] i  hosting[shrimatabillbook]: finalizing version... 
+[debug] [2026-01-20T05:39:43.601Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:43.601Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:43.602Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions/6742490dd7eb8576 updateMask=status%2Cconfig
+[debug] [2026-01-20T05:39:43.602Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions/6742490dd7eb8576 {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
+[debug] [2026-01-20T05:39:44.097Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions/6742490dd7eb8576 200
+[debug] [2026-01-20T05:39:44.097Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/versions/6742490dd7eb8576 {"name":"projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-01-20T05:39:42.806916Z","createUser":{"email":"madhupodutur108@gmail.com"},"finalizeTime":"2026-01-20T05:39:43.944850Z","finalizeUser":{"email":"madhupodutur108@gmail.com"}}
+[debug] [2026-01-20T05:39:44.097Z] [hosting] finalized version for shrimatabillbook:[object Object]
+[info] ✔  hosting[shrimatabillbook]: version finalized 
+[info] i  hosting[shrimatabillbook]: releasing new version... 
+[debug] [2026-01-20T05:39:44.098Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:44.098Z] Checked if tokens are valid: true, expires at: 1768891177831
+[debug] [2026-01-20T05:39:44.098Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/channels/live/releases versionName=projects%2F601854819324%2Fsites%2Fshrimatabillbook%2Fversions%2F6742490dd7eb8576
+[debug] [2026-01-20T05:39:44.098Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/channels/live/releases {}
+[debug] [2026-01-20T05:39:44.534Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/channels/live/releases 200
+[debug] [2026-01-20T05:39:44.535Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/shrimatabillbook/channels/live/releases {"name":"projects/601854819324/sites/shrimatabillbook/channels/live/releases/1768887583843000","version":{"name":"projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-01-20T05:39:42.806916Z","createUser":{"email":"madhupodutur108@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKb8q-FvUAOiwtVOLL_bOYAp2TThlSO8PwHLcoTCT2O5-Frww=mo"},"finalizeTime":"2026-01-20T05:39:43.944850Z","finalizeUser":{"email":"madhupodutur108@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKb8q-FvUAOiwtVOLL_bOYAp2TThlSO8PwHLcoTCT2O5-Frww=mo"}},"type":"DEPLOY","releaseTime":"2026-01-20T05:39:43.843Z","releaseUser":{"email":"madhupodutur108@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKb8q-FvUAOiwtVOLL_bOYAp2TThlSO8PwHLcoTCT2O5-Frww=mo"}}
+[debug] [2026-01-20T05:39:44.535Z] [hosting] release: {"name":"projects/601854819324/sites/shrimatabillbook/channels/live/releases/1768887583843000","version":{"name":"projects/601854819324/sites/shrimatabillbook/versions/6742490dd7eb8576","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-01-20T05:39:42.806916Z","createUser":{"email":"madhupodutur108@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKb8q-FvUAOiwtVOLL_bOYAp2TThlSO8PwHLcoTCT2O5-Frww=mo"},"finalizeTime":"2026-01-20T05:39:43.944850Z","finalizeUser":{"email":"madhupodutur108@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKb8q-FvUAOiwtVOLL_bOYAp2TThlSO8PwHLcoTCT2O5-Frww=mo"}},"type":"DEPLOY","releaseTime":"2026-01-20T05:39:43.843Z","releaseUser":{"email":"madhupodutur108@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKb8q-FvUAOiwtVOLL_bOYAp2TThlSO8PwHLcoTCT2O5-Frww=mo"}}
+[info] ✔  hosting[shrimatabillbook]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/shrimatabillbook/overview
+[info] Hosting URL: https://shrimatabillbook.web.app
+[debug] [2026-01-20T05:39:49.675Z] Error: Timed out.
+    at Timeout._onTimeout (/usr/local/lib/node_modules/firebase-tools/lib/utils.js:308:49)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[error] 
+[error] Error: An unexpected error has occurred.
