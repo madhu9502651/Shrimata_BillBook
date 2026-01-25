@@ -316,6 +316,7 @@
     }
   </style>
 </head>
+<<<<<<< HEAD
 <!-- Add this just before </body> -->
 <script>
   // Start polling for latest data after SDK is ready
@@ -335,6 +336,9 @@
   // Wait for DOM and SDK, then start polling
   window.addEventListener('DOMContentLoaded', startPolling);
 </script>
+=======
+
+>>>>>>> 546a20c (Initial commit for Render deployment)
 <body class="h-full min-h-screen w-full flex items-center justify-center bg-slate-100 text-slate-800" style="min-height: 100vh;">
   <!-- Reference Screenshot for Developers: <img src='/IMG_7938.png' alt='Mobile Dashboard Reference' style='max-width: 100%; display: none;' /> -->
   <div id="app" class="flex flex-col bg-white w-full max-w-[420px] min-h-screen h-full shadow-lg overflow-hidden" style="height: 100vh;"><!-- Header with Pending Collection Alert -->
@@ -1176,8 +1180,11 @@
         renderAll();
       }
     };
+<<<<<<< HEAD
     // Ensure polling and SDK use the same handler
     window.dataHandler = dataHandler;
+=======
+>>>>>>> 546a20c (Initial commit for Render deployment)
 
     // Migration: Add default units to orders without quantity_unit
     async function migrateOrderUnits() {
@@ -1409,7 +1416,10 @@
       showLoading(false);
     }
 
+<<<<<<< HEAD
     
+=======
+>>>>>>> 546a20c (Initial commit for Render deployment)
     function populateMonthSelector() {
       const selector = document.getElementById('month-selector');
       const today = new Date();
@@ -2883,7 +2893,11 @@
 
           const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
 
+<<<<<<< HEAD
           // Try to share using Web Share API (works on mobile browsers)
+=======
+          // Try to share using Web Share API
+>>>>>>> 546a20c (Initial commit for Render deployment)
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
               await navigator.share({
@@ -2894,6 +2908,7 @@
               showToast('Receipt shared successfully!', 'success');
             } catch (error) {
               if (error.name !== 'AbortError') {
+<<<<<<< HEAD
                 downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
                 showToast('Image downloaded. You can now share it manually.', 'info');
               }
@@ -2902,6 +2917,15 @@
             // Desktop fallback: download and notify
             downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
             showToast('Image downloaded. You can now share it manually.', 'info');
+=======
+                // Fallback: download the image
+                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+              }
+            }
+          } else {
+            // Fallback: download the image
+            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+>>>>>>> 546a20c (Initial commit for Render deployment)
           }
         }, 'image/png');
       } catch (error) {
@@ -3877,6 +3901,7 @@
       });
 
       container.innerHTML = Object.values(byWorker).map((data, index) => {
+<<<<<<< HEAD
         // Only count the last status per day for each worker
         const recordsByDate = {};
         data.records.forEach(r => {
@@ -3886,6 +3911,11 @@
         const presentCount = lastRecords.filter(r => r.status === 'present').length;
         const halfDayCount = lastRecords.filter(r => r.status === 'half-day').length;
         const absentCount = lastRecords.filter(r => r.status === 'absent').length;
+=======
+        const presentCount = data.records.filter(r => r.status === 'present').length;
+        const halfDayCount = data.records.filter(r => r.status === 'half-day').length;
+        const absentCount = data.records.filter(r => r.status === 'absent').length;
+>>>>>>> 546a20c (Initial commit for Render deployment)
         const worker = data.worker;
         const workerId = worker.__backendId;
 
@@ -8188,4 +8218,8 @@
   </script>
 </body>
 
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 546a20c (Initial commit for Render deployment)

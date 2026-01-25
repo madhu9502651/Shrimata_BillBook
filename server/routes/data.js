@@ -6,7 +6,10 @@ const { authMiddleware, adminOnly } = require('../middleware/auth');
 // Get all data (filtered by role)
 router.get('/', authMiddleware, async (req, res) => {
   try {
+<<<<<<< HEAD
     console.log('Data fetch query:', req.query);
+=======
+>>>>>>> 546a20c (Initial commit for Render deployment)
     const { type, startDate, endDate } = req.query;
     const query = {};
 
@@ -43,6 +46,7 @@ router.get('/', authMiddleware, async (req, res) => {
       }
     }
 
+<<<<<<< HEAD
     let data;
     try {
       data = await Data.find(query).sort({ createdAt: -1 });
@@ -50,6 +54,9 @@ router.get('/', authMiddleware, async (req, res) => {
       console.error('Data find error:', dbErr);
       return res.status(500).json({ error: 'Database error: ' + dbErr.message });
     }
+=======
+    const data = await Data.find(query).sort({ createdAt: -1 });
+>>>>>>> 546a20c (Initial commit for Render deployment)
     console.log(`[DB] GET all data: found ${data.length} records`);
     res.json({ data });
   } catch (error) {
@@ -76,14 +83,18 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { type } = req.body;
+<<<<<<< HEAD
     console.log('Create record payload:', req.body);
     console.log('Authenticated user:', req.user);
+=======
+>>>>>>> 546a20c (Initial commit for Render deployment)
 
     // Users can only create worker records
     if (req.user.role === 'user' && type !== 'worker') {
       return res.status(403).json({ error: 'Users can only add production records' });
     }
 
+<<<<<<< HEAD
     // Validate type
     const allowedTypes = ['order', 'worker', 'product', 'roll', 'investment', 'household', 'master_worker', 'production', 'attendance'];
     if (!type || !allowedTypes.includes(type)) {
@@ -106,6 +117,14 @@ router.post('/', authMiddleware, async (req, res) => {
       console.error('Mongoose validation error:', err);
       return res.status(400).json({ error: 'Mongoose validation error: ' + err.message });
     }
+=======
+    const record = new Data({
+      ...req.body,
+      createdBy: req.user.userId
+    });
+
+    await record.save();
+>>>>>>> 546a20c (Initial commit for Render deployment)
     console.log(`[DB] CREATE record: type=${type}, id=${record._id}`);
     res.status(201).json({ data: record });
   } catch (error) {
