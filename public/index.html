@@ -4612,6 +4612,24 @@
         `;
         }).join('');
 
+      // Calculate required production based on unsettled orders
+      const ordersByProduct = {};
+      const filteredOrders = getFilteredData(getOrders()).filter(o => !o.settled);
+      filteredOrders.forEach(order => {
+        const product = order.product_name;
+        if (!ordersByProduct[product]) {
+          ordersByProduct[product] = {
+            required: 0,
+            earliestDelivery: order.delivery_date || null
+          };
+        }
+        ordersByProduct[product].required += order.quantity || 0;
+        // Track earliest delivery date
+        if (order.delivery_date && (!ordersByProduct[product].earliestDelivery || new Date(order.delivery_date) < new Date(ordersByProduct[product].earliestDelivery))) {
+          ordersByProduct[product].earliestDelivery = order.delivery_date;
+        }
+      });
+
       // Calculate production completed from worker production records
       const productionByProduct = {};
       workers.forEach(workerProd => {
