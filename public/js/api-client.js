@@ -1,10 +1,5 @@
 // API Client for secure communication with backend
 class SecureAPI {
-  constructor() {
-    this.baseURL = '/api';
-    this.token = null;
-    this.user = JSON.parse(localStorage.getItem('user') || '{}');
-  }
 
   // Share receipt PNG to backend
   async createShareReceipt({ pngData, fileName }) {
