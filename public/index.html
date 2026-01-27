@@ -7778,8 +7778,11 @@
       const filteredSales = getFilteredData(getSales());
       const filteredOrders = getFilteredData(getOrders());
 
+    // Share or download receipt as image
+    async function shareReceipt(order) {
       // Calculate required production based on orders
       const ordersByProduct = {};
+      const filteredOrders = getFilteredData(getOrders());
       filteredOrders.filter(o => !o.settled).forEach(order => {
         const product = order.product_name;
         if (!ordersByProduct[product]) ordersByProduct[product] = 0;
@@ -7854,6 +7857,8 @@
         console.error('Error capturing receipt:', error);
         showToast('Failed to generate image. Error: ' + error.message, 'error');
       }
+    }
+    }
     function showAlerts() {
       const alerts = updateAlerts();
       const modal = document.getElementById('modal');
@@ -8166,4 +8171,3 @@
     initNotificationSystem();
   </script>
 </body>
-
