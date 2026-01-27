@@ -2855,42 +2855,25 @@
         const tempStyle = document.getElementById('temp-hide-watermark');
         if (tempStyle) tempStyle.remove();
 
-        // Convert canvas to blob
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            showToast('Failed to generate image', 'error');
-            return;
-          }
+        // Convert canvas to base64 PNG
+        const pngData = canvas.toDataURL('image/png');
+        const fileName = `receipt-${order.customer_name || 'order'}.png`;
 
-          const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({
-                files: [file],
-                title: `Receipt - ${order.customer_name}`,
-                text: `Order receipt for ${order.customer_name}`
-              });
-              showToast('Receipt shared successfully!', 'success');
-            } catch (error) {
-              if (error.name !== 'AbortError') {
-                // Fallback: download the image
-                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
-              }
-            }
-          } else if (navigator.share) {
-            // Fallback: share as text receipt
-            await shareReceiptAsText();
-            showToast('Receipt shared as text!', 'info');
-          } else {
-            // Fallback: download the image
-            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
-            showToast('Sharing not supported on this device. Image downloaded.', 'warning');
-          }
-        }, 'image/png');
+        // Send PNG to backend
+        const response = await fetch('/api/share-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pngData, fileName })
+        });
+        const result = await response.json();
+        if (result.success) {
+          showToast('Receipt shared to server!', 'success');
+        } else {
+          showToast('Failed to share receipt: ' + (result.message || 'Unknown error'), 'error');
+        }
       } catch (error) {
-        console.error('Error capturing receipt:', error);
-        showToast('Failed to generate image. Error: ' + error.message, 'error');
+        console.error('Error capturing or sharing receipt:', error);
+        showToast('Failed to share receipt. Error: ' + error.message, 'error');
       }
     }
 
