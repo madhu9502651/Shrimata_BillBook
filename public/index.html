@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Manager Pro - Shrimata BillBook</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <!-- Secure API Client -->
@@ -29,15 +31,7 @@
           }
         } catch (error) {
           console.error('Failed to load data:', error);
-          alert('Data load error: ' + (error.message || error));
-          if (window._sessionExpiredHandled) return;
-          if (error.message && error.message.includes('did not match the expected pattern')) {
-            if (!window._dataPatternErrorHandled) {
-              window._dataPatternErrorHandled = true;
-              alert('Failed to load data: ' + error.message + '\nPlease check your login or contact support.');
-            }
-            return;
-          }
+          alert('Failed to load data: ' + error.message);
           alert('Failed to load data: ' + error.message);
         }
       }
@@ -7792,15 +7786,6 @@
 
     // Share or download receipt as image
     async function shareReceipt(order) {
-      // Calculate required production based on orders
-      const ordersByProduct = {};
-      const filteredOrders = getFilteredData(getOrders());
-      filteredOrders.filter(o => !o.settled).forEach(order => {
-        const product = order.product_name;
-        if (!ordersByProduct[product]) ordersByProduct[product] = 0;
-        ordersByProduct[product] += order.quantity || 0;
-      });
-
       // Check if html2canvas is available
       if (typeof html2canvas === 'undefined') {
         showToast('Image library not loaded. Please refresh the page.', 'error');
@@ -8182,4 +8167,7 @@
     initApp();
     initNotificationSystem();
   </script>
+  <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9bb2cd6780ab7fad',t:'MTc2Nzk0OTgzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
+
+</html>
