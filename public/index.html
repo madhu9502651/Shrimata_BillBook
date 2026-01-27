@@ -1980,22 +1980,22 @@
       }
     }
     function renderAll() {
-      renderStats();
-      renderInvestments();
-      renderSales();
-      renderProducts();
-      renderOrders();
-      renderRolls();
-      renderAttendanceWorkers();
-      renderAttendanceForDate(); // Also render daily attendance grid
-      renderPendingOrdersCard();
-      renderProduction();
-      renderWorkers();
-      renderProductionTargets();
-      renderPricingRecommendations();
-      renderMonthlyBreakdown();
-      renderProductAnalysisDropdown();
-      updateAlerts();
+      if (typeof renderStats === 'function') renderStats();
+      if (typeof renderInvestments === 'function') renderInvestments();
+      if (typeof renderSales === 'function') renderSales();
+      if (typeof renderProducts === 'function') renderProducts();
+      if (typeof renderOrders === 'function') renderOrders();
+      if (typeof renderRolls === 'function') renderRolls();
+      if (typeof renderAttendanceWorkers === 'function') renderAttendanceWorkers();
+      if (typeof renderAttendanceForDate === 'function') renderAttendanceForDate(); // Also render daily attendance grid
+      if (typeof renderPendingOrdersCard === 'function') renderPendingOrdersCard();
+      if (typeof renderProduction === 'function') renderProduction();
+      if (typeof renderWorkers === 'function') renderWorkers();
+      if (typeof renderProductionTargets === 'function') renderProductionTargets();
+      if (typeof renderPricingRecommendations === 'function') renderPricingRecommendations();
+      if (typeof renderMonthlyBreakdown === 'function') renderMonthlyBreakdown();
+      if (typeof renderProductAnalysisDropdown === 'function') renderProductAnalysisDropdown();
+      if (typeof updateAlerts === 'function') updateAlerts();
     }
 
     function renderStats() {
