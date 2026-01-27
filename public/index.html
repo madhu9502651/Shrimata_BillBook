@@ -4442,10 +4442,7 @@
       // If type is 'all', show all workers (no additional filtering)
 
       // Update summary cards
-      const uniqueWorkers = [...new Set(workers.map(w => w.worker_name))].length;
-      const totalOutput = workers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
-      const totalHours = workers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
-      const avgProductivity = totalHours > 0 ? (totalOutput / totalHours) : 0;
+      // ...existing code...
 
       // Get monthly wages from households
       const householdWages = getFilteredData(allData.filter(d => d.type === 'household' && d.category === 'Worker Wages'));
@@ -4479,119 +4476,113 @@
       });
 
       // Render grouped by date
-      tbody.innerHTML = sortedDates.map((date, dateIndex) => {
-        const dateWorkers = workersByDate[date];
-        const dateTotal = dateWorkers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
-        const dateHours = dateWorkers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
+      container.innerHTML = Object.values(byWorker).map((data, index) => {
+        const worker = data.worker;
+        const workerId = worker.__backendId;
 
-        const dateHeader = `
-          <tr class="bg-gradient-to-r from-slate-50 to-blue-50 border-t-2 border-slate-300">
-            <td colspan="7" class="px-4 py-3 font-bold text-lg text-slate-700">
-              📅 ${date !== 'No Date' ? formatDate(date) : 'No Date'} 
-              <span class="text-sm font-normal ml-3 text-slate-600">
-                ${dateWorkers.length} worker${dateWorkers.length !== 1 ? 's' : ''} • 
-                ${dateTotal.toLocaleString()} units • 
-                ${dateHours.toFixed(1)}h total
-              </span>
-            </td>
-          </tr>
-        `;
+        // Calculate attendance counts for this worker
+        const presentCount = data.records.filter(r => r.status === 'present').length;
+        const halfDayCount = data.records.filter(r => r.status === 'half-day').length;
+        const absentCount = data.records.filter(r => r.status === 'absent').length;
 
-        const dateRows = dateWorkers.map(worker => {
-          const productivity = worker.hours_worked > 0 ? (worker.units_produced / worker.hours_worked) : 0;
-          const isLowProductivity = productivity < 5;
+        // Get the month from records for salary calculation
+        const month = data.records.length > 0 && data.records[0].date
+          ? data.records[0].date.substring(0, 7)
+          : new Date().toISOString().substring(0, 7);
 
-          return `
-            <tr class="table-row border-b border-slate-100 ${isLowProductivity ? 'bg-amber-50' : ''}">
-              <td class="px-4 py-3 text-slate-600">${formatDate(worker.date)}</td>
-              <td class="px-4 py-3 font-medium">${escapeHtml(worker.worker_name || '')}</td>
-              <td class="px-4 py-3">
-                ${worker.background_work ?
-              `<span class="text-slate-700">${escapeHtml(worker.background_work)}</span>
-                   <span class="text-xs text-slate-500 block">Background Work</span>`
-              : escapeHtml(worker.product_name || '')}
-              </td>
-              <td class="px-4 py-3 font-semibold text-blue-600">${(worker.units_produced || 0).toLocaleString()} ${escapeHtml(worker.production_unit || 'pcs')}</td>
-              <td class="px-4 py-3 text-slate-600">${worker.hours_worked || 0}h</td>
-              <td class="px-4 py-3 ${isLowProductivity ? 'text-amber-600 font-semibold' : 'text-slate-700'}">${productivity.toFixed(1)} ${isLowProductivity ? '⚠️' : ''}</td>
-              <td class="px-4 py-3">
-                <div class="flex gap-2">
-                  <button onclick="editItem('${worker.__backendId}', 'worker')" class="text-blue-600 hover:text-blue-800 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
-                  <button onclick="deleteItem('${worker.__backendId}')" class="text-red-600 hover:text-red-800 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
+        // Build calendar view if dateRange is provided
+        let calendarHTML = '';
+        if (dateRange && dateRange.dates && dateRange.dates.length > 0) {
+          calendarHTML = `
+            <div class="border-t border-slate-200 pt-3 mt-3">
+              <div class="grid grid-cols-7 gap-1">
+                ${dateRange.dates.map(dateStr => {
+            const record = data.records.find(r => r.date === dateStr);
+            const status = record?.status;
+            const date = new Date(dateStr);
+            const day = date.getDate();
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+
+            let bgColor = 'bg-slate-100';
+            let textColor = 'text-slate-400';
+            let badge = '';
+
+            if (status === 'present') {
+              bgColor = 'bg-green-500';
+              textColor = 'text-white';
+              badge = '✓';
+            } else if (status === 'absent') {
+              bgColor = 'bg-red-500';
+              textColor = 'text-white';
+              badge = '✗';
+            } else if (status === 'half-day') {
+              bgColor = 'bg-orange-500';
+              textColor = 'text-white';
+              badge = '◐';
+            }
+
+            return `
+                    <div class="text-center">
+                      <div class="text-xs text-slate-500 mb-1">${dayName}</div>
+                      <div class="${bgColor} ${textColor} rounded-lg p-2 font-bold text-sm">
+                        ${day}
+                        ${badge ? `<div class="text-xs">${badge}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+          }).join('')}
+              </div>
+            </div>
           `;
-        }).join('');
-
-        // Add spacing row between dates (except for the last group)
-        const spacingRow = dateIndex < sortedDates.length - 1 ?
-          '<tr class="bg-slate-100"><td colspan="7" class="h-3"></td></tr>' : '';
-
-        return dateHeader + dateRows + spacingRow;
-      }).join('');
-    }
-
-    function renderProductionTargets() {
-      const currency = getCurrency();
-      const orders = getFilteredData(getOrders()).filter(o => !o.settled);
-      const production = getFilteredData(getProduction());
-      const workers = getFilteredData(getWorkers());
-      const container = document.getElementById('production-targets');
-
-      if (orders.length === 0) {
-        container.innerHTML = '<p class="text-slate-500 text-center py-8">No pending orders to calculate targets.</p>';
-        return;
-      }
-
-      // Group orders by product
-      const ordersByProduct = {};
-      orders.forEach(order => {
-        // Handle both multi-product and legacy single-product orders
-        if (order.products && order.products.length > 0) {
-          // Multi-product order
-          order.products.forEach(prod => {
-            const product = prod.product_name;
-            if (!product) return; // Skip if no product name
-
-            if (!ordersByProduct[product]) {
-              ordersByProduct[product] = { required: 0, orders: [], earliestDelivery: null };
-            }
-            ordersByProduct[product].required += prod.quantity || 0;
-            ordersByProduct[product].orders.push(order);
-
-            if (order.delivery_date) {
-              if (!ordersByProduct[product].earliestDelivery || order.delivery_date < ordersByProduct[product].earliestDelivery) {
-                ordersByProduct[product].earliestDelivery = order.delivery_date;
-              }
-            }
-          });
-        } else {
-          // Legacy single-product order
-          const product = order.product_name;
-          if (!product) return; // Skip if no product name
-
-          if (!ordersByProduct[product]) {
-            ordersByProduct[product] = { required: 0, orders: [], earliestDelivery: null };
-          }
-          ordersByProduct[product].required += order.quantity || 0;
-          ordersByProduct[product].orders.push(order);
-
-          if (order.delivery_date) {
-            if (!ordersByProduct[product].earliestDelivery || order.delivery_date < ordersByProduct[product].earliestDelivery) {
-              ordersByProduct[product].earliestDelivery = order.delivery_date;
-            }
-          }
         }
-      });
+
+        return `
+          <div class="card-gradient shadow-lg border ${data.isDeleted ? 'border-orange-300' : 'border-slate-200'} rounded-xl overflow-hidden mb-4">
+            <div class="p-4 cursor-pointer hover:opacity-90 transition-opacity" onclick="toggleWorkerHistory('${workerId}')">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br ${data.isDeleted ? 'from-orange-400 to-red-500' : 'from-blue-500 to-purple-600'} rounded-full flex items-center justify-center text-white font-bold">
+                    ${escapeHtml(worker?.name || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div class="font-semibold text-lg">${escapeHtml(worker?.name || 'Unknown')}</div>
+                    ${data.isDeleted ? '<div class="text-xs text-orange-600 font-semibold">⚠️ Worker Deleted</div>' : ''}
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="text-sm text-slate-600">
+                    <span class="text-green-600 font-semibold">${presentCount}✓</span> / 
+                    <span class="text-orange-600 font-semibold">${halfDayCount}◐</span> / 
+                    <span class="text-red-600 font-semibold">${absentCount}✗</span>
+                  </div>
+                  <svg id="chevron-${workerId}" class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div id="history-${workerId}" class="hidden" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+              <div class="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-t border-slate-200">
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                  <div class="bg-white border border-green-200 rounded-lg p-3 shadow-sm">
+                    <div class="text-xs text-green-600 font-medium">Present</div>
+                    <div class="text-xl font-bold text-green-700">${presentCount}</div>
+                  </div>
+                  <div class="bg-white border border-orange-200 rounded-lg p-3 shadow-sm">
+                    <div class="text-xs text-orange-600 font-medium">Half Day</div>
+                    <div class="text-xl font-bold text-orange-700">${halfDayCount}</div>
+                  </div>
+                  <div class="bg-white border border-red-200 rounded-lg p-3 shadow-sm">
+                    <div class="text-xs text-red-600 font-medium">Absent</div>
+                    <div class="text-xl font-bold text-red-700">${absentCount}</div>
+                  </div>
+                </div>
+                ${calendarHTML}
+              </div>
+            </div>
+          </div>
+        `;
+        }).join('');
 
       // Calculate production completed from worker production records
       const productionByProduct = {};
@@ -4602,11 +4593,7 @@
       });
 
       // Calculate worker productivity - count only active master workers, not deleted ones
-      const activeMasterWorkers = getMasterWorkers(); // Get only existing master workers
-      const uniqueWorkers = activeMasterWorkers.length; // Count actual active workers
-      const totalHours = workers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
-      const totalOutput = workers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
-      const avgProductivity = totalHours > 0 && totalOutput > 0 ? totalOutput / totalHours : 10; // default 10 units/hour if no data
+      // ...existing code...
 
       container.innerHTML = `
         <div class="space-y-4">
