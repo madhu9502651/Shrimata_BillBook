@@ -19,9 +19,18 @@ class SecureAPI {
 
   // Handle API errors (no session logic)
   async handleResponse(response) {
-    const data = await response.json();
+    const text = await response.text();
+    console.log('API raw response:', text); // Debug: log raw response
+    let data;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (e) {
+      // If response is not valid JSON, throw a clear error
+      throw new Error('Invalid JSON response: ' + e.message + '\nRaw response: ' + text);
+    }
     if (!response.ok) {
-      throw new Error(data.error || 'Request failed');
+      // If backend sends error in JSON, use it; else generic
+      throw new Error((data && data.error) || 'Request failed');
     }
     return data;
   }
