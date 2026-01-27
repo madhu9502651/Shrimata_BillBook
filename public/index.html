@@ -4190,7 +4190,12 @@
     async function markAttendance(workerId, date, status) {
       try {
         const attendanceRecords = getAttendance();
-        const existingRecord = attendanceRecords.find(a => a.worker_id === workerId && a.date === date);
+        // Remove all other attendance records for this worker and date except the one being updated/created
+        let existingRecord = attendanceRecords.find(a => a.worker_id === workerId && a.date === date);
+        const duplicates = attendanceRecords.filter(a => a.worker_id === workerId && a.date === date && a !== existingRecord);
+        for (const dup of duplicates) {
+          if (dup.__backendId) await window.dataSdk.delete(dup.__backendId);
+        }
         const oldStatus = existingRecord?.status;
 
         // Get worker name to store in attendance record
@@ -4201,6 +4206,11 @@
           'Unknown Worker';
 
         if (existingRecord) {
+          // If status is unchanged, do nothing
+          if (existingRecord.status === status) {
+            showToast('Attendance already marked as ' + status, 'info');
+            return;
+          }
           // Update existing - preserve the worker name if it exists
           const result = await window.dataSdk.update({
             ...existingRecord,
@@ -4487,6 +4497,7 @@
       });
 
       // Render grouped by worker
+      // This function does not use dateRange, so we remove any reference to it.
       container.innerHTML = Object.values(byWorker).map((data, index) => {
         const worker = data.worker;
         const workerId = worker.__backendId;
@@ -7775,74 +7786,74 @@
         ordersByProduct[product] += order.quantity || 0;
       });
 
-      // Check production vs orders
-      const productionByProduct = {};
-      filteredProduction.forEach(prod => {
-        const product = prod.product_name;
-        if (!productionByProduct[product]) productionByProduct[product] = 0;
-        productionByProduct[product] += prod.units_produced || 0;
-      });
+      // Check if html2canvas is available
+      if (typeof html2canvas === 'undefined') {
+        showToast('Image library not loaded. Please refresh the page.', 'error');
+        return;
+      }
 
-      Object.keys(ordersByProduct).forEach(product => {
-        const required = ordersByProduct[product];
-        const produced = productionByProduct[product] || 0;
-        if (produced < required) {
-          alerts.push({
-            type: 'danger',
-            title: `Production Below Target: ${product}`,
-            message: `Required: ${required}, Produced: ${produced}. Short by ${required - produced} units.`
-          });
-        }
-      });
+      const receiptContent = document.getElementById('receipt-content');
+      if (!receiptContent) return;
 
-      // Check for high wastage
-      filteredProduction.forEach(prod => {
-        if (prod.wastage_percent > 15) {
-          alerts.push({
-            type: 'warning',
-            title: `High Wastage Alert: ${prod.product_name}`,
-            message: `Wastage at ${prod.wastage_percent}% on ${formatDate(prod.date)}. Review production process.`
-          });
-        }
-      });
+      showToast('Generating image...', 'info');
 
-      // Check for low worker productivity
-      filteredWorkers.forEach(worker => {
-        const productivity = worker.hours_worked > 0 ? (worker.units_produced / worker.hours_worked) : 0;
-        if (productivity < 5) {
-          alerts.push({
-            type: 'warning',
-            title: `Low Productivity: ${worker.worker_name}`,
-            message: `Only ${productivity.toFixed(1)} units/hour on ${formatDate(worker.date)} for ${worker.product_name}.`
-          });
-        }
-      });
+      try {
+        // Temporarily hide the watermark to avoid CORS issues
+        const style = document.createElement('style');
+        style.id = 'temp-hide-watermark';
+        style.textContent = '#receipt-content::before { display: none !important; }';
+        document.head.appendChild(style);
 
-      // Check selling price vs cost
-      filteredSales.forEach(sale => {
-        const productions = filteredProduction.filter(p => p.product_name === sale.name);
-        if (productions.length > 0) {
-          const totalCost = productions.reduce((sum, p) => sum + p.total_cost, 0);
-          const totalUnits = productions.reduce((sum, p) => sum + p.units_produced, 0);
-          const costPerUnit = totalUnits > 0 ? totalCost / totalUnits : 0;
-          const sellingPricePerUnit = sale.quantity > 0 ? sale.selling_price / sale.quantity : sale.selling_price;
+        // Find and temporarily hide the logo image
+        const logoImg = receiptContent.querySelector('img[alt="Shri Mata Logo"]');
+        const originalDisplay = logoImg ? logoImg.style.display : null;
+        if (logoImg) logoImg.style.display = 'none';
 
-          if (sellingPricePerUnit < costPerUnit) {
-            alerts.push({
-              type: 'danger',
-              title: `Selling Below Cost: ${sale.name}`,
-              message: `Sale to ${sale.customer_name} at ${currency}${sellingPricePerUnit.toFixed(2)}/unit vs cost ${currency}${costPerUnit.toFixed(2)}/unit. Loss: ${currency}${((costPerUnit - sellingPricePerUnit) * sale.quantity).toFixed(2)}`
-            });
+        // Wait a moment
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Capture the receipt as canvas
+        const canvas = await html2canvas(receiptContent, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          logging: false,
+          allowTaint: true,
+          useCORS: false
+        });
+
+        // Restore logo
+        if (logoImg && originalDisplay !== null) logoImg.style.display = originalDisplay;
+        const tempStyle = document.getElementById('temp-hide-watermark');
+        if (tempStyle) tempStyle.remove();
+
+        // Convert canvas to blob
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast('Failed to generate image', 'error');
+            return;
           }
-        }
-      });
-
-      // Update alerts count badge
-      document.getElementById('alerts-count').textContent = alerts.length;
-
-      return alerts;
-    }
-
+          const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: `Receipt - ${order.customer_name}`,
+                text: `Order receipt for ${order.customer_name}`
+              });
+              showToast('Receipt shared successfully!', 'success');
+            } catch (error) {
+              if (error.name !== 'AbortError') {
+                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+              }
+            }
+          } else {
+            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+          }
+        }, 'image/png');
+      } catch (error) {
+        console.error('Error capturing receipt:', error);
+        showToast('Failed to generate image. Error: ' + error.message, 'error');
+      }
     function showAlerts() {
       const alerts = updateAlerts();
       const modal = document.getElementById('modal');
