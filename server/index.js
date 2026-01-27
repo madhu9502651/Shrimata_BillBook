@@ -7,7 +7,9 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const dataRoutes = require('./routes/data');
+
 const { initializeAdmin } = require('./utils/initAdmin');
+const shareReceiptRoutes = require('./routes/shareReceipt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,8 +42,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
 // API Routes
+
 app.use('/api/auth', authRoutes);
 app.use('/api/data', dataRoutes);
+app.use('/api/share-receipt', shareReceiptRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
