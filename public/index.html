@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Manager Pro - Shrimata BillBook</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
@@ -19,7 +18,6 @@
 
       // Fetch all data from backend
       async function loadDataFromBackend() {
-        // Login/session check removed: always load data
         try {
           const response = await api.getData();
           allData = response.data.map(item => ({
@@ -31,7 +29,6 @@
           }
         } catch (error) {
           console.error('Failed to load data:', error);
-          alert('Failed to load data: ' + error.message);
           alert('Failed to load data: ' + error.message);
         }
       }
@@ -113,7 +110,6 @@
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link href="/output.css" rel="stylesheet">
   <style>
     body {
       box-sizing: border-box;
@@ -180,21 +176,6 @@
 
     .table-row:hover {
       background: #f1f5f9;
-    }
-    /* Reduce font size for tables in production, orders, and expenses */
-    #orders-section table,
-    #production-summary-card table,
-    #investments-section table,
-    #products-section table,
-    #attendance-section table {
-      font-size: 0.85rem;
-    }
-    #orders-section th, #orders-section td,
-    #production-summary-card th, #production-summary-card td,
-    #investments-section th, #investments-section td,
-    #products-section th, #products-section td,
-    #attendance-section th, #attendance-section td {
-      padding: 0.25rem 0.4rem;
     }
 
     @keyframes fadeIn {
@@ -310,35 +291,24 @@
     }
   </style>
 </head>
-<body class="h-full min-h-screen w-full flex items-center justify-center bg-slate-100 text-slate-800" style="min-height: 100vh;">
-  <!-- Reference Screenshot for Developers: <img src='/IMG_7938.png' alt='Mobile Dashboard Reference' style='max-width: 100%; display: none;' /> -->
-  <div id="app" class="flex flex-col bg-white w-full max-w-[420px] min-h-screen h-full shadow-lg overflow-hidden" style="height: 100vh;"><!-- Header with Pending Collection Alert -->
+
+<body class="h-full bg-slate-100 text-slate-800">
+  <div id="app" class="h-full flex flex-col overflow-hidden"><!-- Header with Pending Collection Alert -->
     <header class="bg-white shadow-sm border-b border-slate-200 px-4 py-3 flex-shrink-0">
-      <div class="w-full flex flex-col items-center gap-2 pt-2 pb-2">
-        <h1 id="app-title" class="text-xl font-bold text-slate-800 w-full text-center tracking-tight leading-tight mb-2">Shrimata Business Manager Pro</h1>
-        <div class="w-full flex flex-row flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-2 rounded-lg border border-purple-200 flex-1 min-w-0">
-            <span class="text-base align-middle font-medium text-slate-700 truncate">👤 <span id="user-name">User</span></span>
-            <span id="user-role-badge" class="text-xs px-2 py-1 rounded-full bg-purple-600 text-white font-semibold">ADMIN</span>
+      <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
+        <h1 id="app-title" class="text-xl md:text-2xl font-bold text-slate-800">Shrimata Business Manager Pro</h1>
+        <div class="flex items-center gap-3 flex-wrap">
+          <!-- User Info -->
+          <div
+            class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-2 rounded-lg border border-purple-200">
+            <span class="text-sm font-medium text-slate-700">👤 <span id="user-name">User</span></span>
+            <span id="user-role-badge"
+              class="text-xs px-2 py-1 rounded-full bg-purple-600 text-white font-semibold">ADMIN</span>
           </div>
-          <div class="flex gap-2 flex-shrink-0 mt-2">
-            <button onclick="showAlerts()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors" title="View Alerts">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <span id="alerts-count" class="font-bold">0</span>
-            </button>
-            <button onclick="confirmLogout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors" title="Logout">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="w-full flex flex-row items-center gap-2 mt-2">
           <div class="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-lg">
             <label class="text-sm font-medium text-slate-700">Month:</label>
-            <select id="month-selector" onchange="filterByMonth()" class="bg-white border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="month-selector" onchange="filterByMonth()"
+              class="bg-white border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="all">All Time</option>
               <option value="2026-01" selected>January 2026</option>
               <option value="2025-12">December 2025</option>
@@ -346,53 +316,56 @@
               <option value="2025-10">October 2025</option>
             </select>
           </div>
-          <div id="pending-alert" class="pending-card text-white flex-1 px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
+          <button onclick="showAlerts()"
+            class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            title="View Alerts">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="alerts-count" class="font-bold">0</span>
+          </button>
+          <button onclick="confirmLogout()"
+            class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            title="Logout">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+          <div id="pending-alert"
+            class="pending-card text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg><span class="font-medium">To Collect: <span id="total-pending" class="font-bold">₹0</span></span>
           </div>
         </div>
-
       </div>
     </header><!-- Navigation Tabs -->
-    <nav class="bg-white border-b border-slate-200 px-4 flex-shrink-0" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100vw; max-width: 420px; z-index: 50;">
-      <div class="w-full flex gap-1 overflow-x-auto scrollbar-thin py-2 justify-between">
-          <button onclick="switchTab('dashboard')" id="tab-dashboard"
-          class="tab-btn tab-active flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all">
-          <span aria-label="Dashboard" title="Dashboard" class="text-base align-middle">📊</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Dashboard</span>
-        </button>
-          <button onclick="switchTab('orders')" id="tab-orders"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
-          <span aria-label="Orders" title="Orders" class="text-base align-middle">📋</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Orders</span>
-        </button>
-          <button onclick="switchTab('attendance')" id="tab-attendance"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200 relative">
-          <span aria-label="Attendance" title="Attendance" class="text-base align-middle">👥</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Attendance</span>
-          <span id="attendance-badge" class="hidden absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-        </button>
-          <button onclick="switchTab('workers')" id="tab-workers"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200 relative">
-          <span aria-label="Production" title="Production" class="text-base align-middle">👷</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Production</span>
-          <span id="production-badge" class="hidden absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-        </button>
-          <button onclick="switchTab('investments')" id="tab-investments"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
-          <span aria-label="Expenses" title="Expenses" class="text-base align-middle">💰</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Expenses</span>
-        </button>
-          <button onclick="switchTab('products')" id="tab-products"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
-          <span aria-label="Products" title="Products" class="text-base align-middle">📦</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Products</span>
-        </button>
+    <nav class="bg-white border-b border-slate-200 px-4 flex-shrink-0">
+      <div class="max-w-7xl mx-auto flex gap-1 overflow-x-auto scrollbar-thin py-2"><button
+          onclick="switchTab('dashboard')" id="tab-dashboard"
+          class="tab-btn tab-active px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all"> 📊
+          Dashboard </button> <button onclick="switchTab('orders')" id="tab-orders"
+          class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
+          📋 Orders & Payments </button> <button onclick="switchTab('attendance')" id="tab-attendance"
+          class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200 relative">
+          👥 Attendance <span id="attendance-badge"
+            class="hidden absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span></button> <button
+          onclick="switchTab('workers')" id="tab-workers"
+          class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200 relative">
+          👷 Production <span id="production-badge"
+            class="hidden absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span></button> <button
+          onclick="switchTab('investments')" id="tab-investments"
+          class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
+          💰 Expenses </button> <button onclick="switchTab('products')" id="tab-products"
+          class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
+          📦 Products </button>
       </div>
     </nav><!-- Main Content -->
     <main class="flex-1 overflow-auto p-4 scrollbar-thin">
-      <div class="w-full flex flex-col gap-3 pb-32 px-2 pt-2"><!-- Dashboard Tab, pb-32 for nav/action bar space -->
+      <div class="max-w-7xl mx-auto"><!-- Dashboard Tab -->
         <div id="content-dashboard" class="tab-content animate-fade-in">
           <!-- Notification Permission Banner -->
           <div id="notification-banner" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 hidden">
@@ -414,9 +387,9 @@
             </div>
           </div>
           <!-- Stats Cards -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div onclick="showAllInvestments()"
-              class="stat-card rounded-xl p-4 text-white shadow cursor-pointer hover:opacity-90 transition-opacity mb-3">
+              class="stat-card rounded-xl p-4 text-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
               <div class="text-sm opacity-80 mb-1">
                 Total Monthly Cost
               </div>
@@ -425,7 +398,7 @@
               </div>
               <div class="text-xs opacity-70 mt-1">Materials + Wages + Expenses</div>
             </div>
-            <div class="stat-card rounded-xl p-4 text-white shadow mb-3">
+            <div class="stat-card rounded-xl p-4 text-white shadow-lg">
               <div class="text-sm opacity-80 mb-1">
                 Total Revenue
               </div>
@@ -433,7 +406,7 @@
                 ₹0
               </div>
             </div>
-            <div id="profit-loss-card" class="profit-card rounded-xl p-4 text-white shadow mb-3">
+            <div id="profit-loss-card" class="profit-card rounded-xl p-4 text-white shadow-lg">
               <div class="text-sm opacity-80 mb-1">
                 Profit/Loss
               </div>
@@ -441,7 +414,7 @@
                 ₹0
               </div>
             </div>
-            <div class="pending-card rounded-xl p-4 text-white shadow mb-3">
+            <div class="pending-card rounded-xl p-4 text-white shadow-lg">
               <div class="text-sm opacity-80 mb-1">
                 Pending Collection
               </div>
@@ -770,7 +743,7 @@
         <div id="content-attendance" class="tab-content hidden animate-fade-in">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h2 class="text-xl font-bold">👥 Attendance Management</h2>
-            <button onclick="openModal('master_worker')"
+            <button onclick="openModal('worker-master')"
               class="btn-primary text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -1151,8 +1124,6 @@
         renderAll();
       }
     };
-    // Ensure polling and SDK use the same handler
-    window.dataHandler = dataHandler;
 
     // Migration: Add default units to orders without quantity_unit
     async function migrateOrderUnits() {
@@ -1183,7 +1154,7 @@
     // Cleanup: Remove orphaned attendance records with "Unknown Worker"
     async function cleanupOrphanedAttendance() {
       const attendanceRecords = allData.filter(d => d.type === 'attendance');
-      const masterWorkers = allData.filter(d => d.type === 'master_worker');
+      const masterWorkers = allData.filter(d => d.type === 'worker-master');
 
       for (const record of attendanceRecords) {
         // Check if worker exists
@@ -1310,17 +1281,15 @@
       // Load and display user info
       try {
         const user = api.user;
-        const userNameElem = document.getElementById('user-name');
+        document.getElementById('user-name').textContent = user.fullName || user.username;
         const roleBadge = document.getElementById('user-role-badge');
-        if (userNameElem) userNameElem.textContent = (user && (user.fullName || user.username)) || '';
-        if (roleBadge && user && user.role) {
-          roleBadge.textContent = user.role.toUpperCase();
-          roleBadge.className = user.role === 'admin'
-            ? 'text-xs px-2 py-1 rounded-full bg-purple-600 text-white font-semibold'
-            : 'text-xs px-2 py-1 rounded-full bg-green-600 text-white font-semibold';
-        }
+        roleBadge.textContent = user.role.toUpperCase();
+        roleBadge.className = user.role === 'admin'
+          ? 'text-xs px-2 py-1 rounded-full bg-purple-600 text-white font-semibold'
+          : 'text-xs px-2 py-1 rounded-full bg-green-600 text-white font-semibold';
+
         // Apply role-based UI restrictions
-        if (user && user.role) applyRoleRestrictions(user.role);
+        applyRoleRestrictions(user.role);
       } catch (error) {
         console.error('Failed to load user info:', error);
       }
@@ -1384,7 +1353,6 @@
       showLoading(false);
     }
 
-    
     function populateMonthSelector() {
       const selector = document.getElementById('month-selector');
       const today = new Date();
@@ -1404,11 +1372,9 @@
         months.push(`<option value="${monthValue}" ${isSelected}>${monthName}</option>`);
       }
 
-      if (selector) {
-        selector.innerHTML = months.join('');
-        selectedMonth = selector.value; // Use selector value to ensure sync
-        console.log('Month selector populated. Selected month:', selectedMonth);
-      }
+      selector.innerHTML = months.join('');
+      selectedMonth = selector.value; // Use selector value to ensure sync
+      console.log('Month selector populated. Selected month:', selectedMonth);
     }
 
     function applyConfig(config) {
@@ -1472,8 +1438,7 @@
 
     function showLoading(show) {
       isLoading = show;
-      const overlay = document.getElementById('loading-overlay');
-      if (overlay) overlay.classList.toggle('hidden', !show);
+      document.getElementById('loading-overlay').classList.toggle('hidden', !show);
     }
 
     // Tab Navigation
@@ -1598,16 +1563,11 @@
           if (tabBtn) {
             tabBtn.style.opacity = '0.5';
             tabBtn.style.cursor = 'not-allowed';
-            tabBtn.onclick = function(e) {
-              e.preventDefault();
-              alert('⛔ Access Denied: You can only access the Production tab.');
-              return false;
-            };
           }
         });
 
-        // Automatically switch to workers tab (Production)
-        setTimeout(() => switchTab('workers'), 0);
+        // Automatically switch to workers tab
+        switchTab('workers');
 
         // Restrict worker tab to show only today's data and hide edit/delete buttons
         restrictWorkerTabForUsers();
@@ -1636,12 +1596,7 @@
     // Confirm logout with user
     function confirmLogout() {
       if (confirm('Are you sure you want to logout?')) {
-        if (api.logout instanceof Function) {
-          const result = api.logout();
-          if (result && typeof result.then === 'function') {
-            result.then(() => {}).catch(() => {});
-          }
-        }
+        api.logout();
       }
     }
 
@@ -1691,7 +1646,7 @@
     }
 
     function getMasterWorkers() {
-      return allData.filter(d => d.type === 'master_worker');
+      return allData.filter(d => d.type === 'worker-master');
     }
 
     // Convert between material units and product units using conversion factor
@@ -1974,22 +1929,22 @@
       }
     }
     function renderAll() {
-      if (typeof renderStats === 'function') renderStats();
-      if (typeof renderInvestments === 'function') renderInvestments();
-      if (typeof renderSales === 'function') renderSales();
-      if (typeof renderProducts === 'function') renderProducts();
-      if (typeof renderOrders === 'function') renderOrders();
-      if (typeof renderRolls === 'function') renderRolls();
-      if (typeof renderAttendanceWorkers === 'function') renderAttendanceWorkers();
-      if (typeof renderAttendanceForDate === 'function') renderAttendanceForDate(); // Also render daily attendance grid
-      if (typeof renderPendingOrdersCard === 'function') renderPendingOrdersCard();
-      if (typeof renderProduction === 'function') renderProduction();
-      if (typeof renderWorkers === 'function') renderWorkers();
-      if (typeof renderProductionTargets === 'function') renderProductionTargets();
-      if (typeof renderPricingRecommendations === 'function') renderPricingRecommendations();
-      if (typeof renderMonthlyBreakdown === 'function') renderMonthlyBreakdown();
-      if (typeof renderProductAnalysisDropdown === 'function') renderProductAnalysisDropdown();
-      if (typeof updateAlerts === 'function') updateAlerts();
+      renderStats();
+      renderInvestments();
+      renderSales();
+      renderProducts();
+      renderOrders();
+      renderRolls();
+      renderAttendanceWorkers();
+      renderAttendanceForDate(); // Also render daily attendance grid
+      renderPendingOrdersCard();
+      renderProduction();
+      renderWorkers();
+      renderProductionTargets();
+      renderPricingRecommendations();
+      renderMonthlyBreakdown();
+      renderProductAnalysisDropdown();
+      updateAlerts();
     }
 
     function renderStats() {
@@ -2438,109 +2393,127 @@
 
         const customerId = customer.replace(/[^a-zA-Z0-9]/g, '_');
 
-        // MOBILE-FIRST CARD LAYOUT
         return `
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-4 px-0 pt-0 pb-2 ${allSettled ? 'opacity-60' : ''}">
-          <div class="flex flex-col gap-2 p-4 pb-2">
-            <div class="flex items-center gap-3 mb-1 cursor-pointer select-none" onclick="togglePaymentHistory('${customerId}')">
-              <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                ${escapeHtml(customer).charAt(0).toUpperCase()}
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="font-semibold text-base truncate">${escapeHtml(customer)} ${allSettled ? '<span class=\"text-xs text-green-600 font-normal\">✓ Settled</span>' : ''}</div>
-                <div class="text-xs text-slate-500 mt-0.5">${totalOrders} ${totalOrders === 1 ? 'order' : 'orders'} • ${allPayments.length} ${allPayments.length === 1 ? 'payment' : 'payments'}</div>
-              </div>
-              <button onclick="(function(e){e.stopPropagation();shareReceipt('${customer.replace(/'/g, "\\'")}");})(event);" class="ml-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" title="Share Receipt">
-                <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                </svg>
-              </button>
-              <svg id="chevron-${customerId}" class="w-5 h-5 text-slate-400 transform transition-transform ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </div>
-            <div class="flex flex-col gap-1 mt-1">
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-500">Total Paid</span>
-                <span class="text-base font-bold text-green-600">${currency}${totalPaid.toLocaleString()}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-500">Balance</span>
-                <span class="text-base font-bold ${totalBalance > 0 ? 'text-red-600' : 'text-green-600'}">${currency}${totalBalance.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-          <div id="payments-${customerId}" class="hidden" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
-            <div class="p-3 pt-0 bg-slate-50 border-t border-slate-200">
-              <!-- Orders Section -->
-              <div class="mb-3">
-                <h4 class="font-semibold text-slate-700 mb-2 text-sm">Orders</h4>
-                <div class="flex flex-col gap-2">
-                  ${customerOrders.map((order, idx) => `
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 ${order.settled ? 'opacity-60' : ''} flex flex-col gap-1">
-                      <div class="font-semibold text-slate-800 text-sm">${escapeHtml(order.product_name || 'N/A')}</div>
-                      <div class="text-xs text-slate-500">
-                        📅 ${formatDate(order.issue_date)}
-                        ${order.delivery_date ? `• 🚚 ${formatDate(order.delivery_date)}` : ''}
-                        • 📦 Qty: ${order.quantity || 0} ${order.length && order.width ? `(${order.length}×${order.width}${order.dimension_unit || 'cm'})` : ''}
-                        ${order.cutting_length && order.cutting_width ? `• ✂️ ${order.cutting_length}×${order.cutting_width}${order.cutting_unit || 'cm'}` : ''}
-                      </div>
-                      <div class="flex flex-col gap-0.5 mt-1 text-xs">
-                        <span class="text-slate-600">Amount: ${currency}${(order.price || 0).toLocaleString()}</span>
-                        <span class="text-green-600">Paid: ${currency}${(order.amount_paid || 0).toLocaleString()}</span>
-                        ${order.balance > 0 ? `<span class="text-red-600">Balance: ${currency}${(order.balance || 0).toLocaleString()}</span>` : '<span class="text-green-600 font-semibold">✓ Settled</span>'}
-                      </div>
-                      ${order.promised_payment_date && order.balance > 0 ? `<div class="text-xs text-orange-600 font-semibold mt-1">🗓️ To collect by: ${formatDate(order.promised_payment_date)}</div>` : ''}
+          <div class="bg-white border border-slate-200 rounded-lg overflow-hidden mb-3 ${allSettled ? 'opacity-60' : ''}">
+            <div class="p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="togglePaymentHistory('${customerId}')">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    ${escapeHtml(customer).charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div class="font-semibold text-lg">${escapeHtml(customer)} ${allSettled ? '<span class="text-xs text-green-600 font-normal">✓ Settled</span>' : ''}</div>
+                    <div class="text-xs text-slate-500">${totalOrders} ${totalOrders === 1 ? 'order' : 'orders'} • ${allPayments.length} ${allPayments.length === 1 ? 'payment' : 'payments'}</div>
+                    <div class="text-xs text-slate-600 mt-1 space-y-0.5">
+                      ${customerOrders.map(order => `
+                        <div>📦 ${escapeHtml(order.product_name || 'N/A')} • 📅 ${formatDate(order.issue_date)} • 🚚 ${order.delivery_date ? formatDate(order.delivery_date) : 'N/A'}</div>
+                      `).join('')}
                     </div>
-                  `).join('')}
+                  </div>
+                </div>
+                <div class="flex items-center gap-4">
+                  <div class="text-right">
+                    <div class="text-xs text-slate-500">Total Paid</div>
+                    <div class="text-lg font-bold text-green-600">${currency}${totalPaid.toLocaleString()}</div>
+                  </div>
+                  ${totalBalance > 0 ? `
+                    <div class="text-right">
+                      <div class="text-xs text-slate-500">Balance</div>
+                      <div class="text-lg font-bold text-red-600">${currency}${totalBalance.toLocaleString()}</div>
+                    </div>
+                  ` : ''}
+                  <button onclick="shareReceipt('${customer.replace(/'/g, "\\'")}')"; event.stopPropagation();" class="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" title="Share Receipt">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                  </button>
+                  <svg id="chevron-${customerId}" class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
                 </div>
               </div>
-              <!-- Payment Transactions Section -->
-              <h4 class="font-semibold text-slate-700 mb-2 text-sm">Payment Transactions</h4>
-              ${allPayments.length > 0 ? `
-                <div class="flex flex-col gap-2">
-                  ${allPayments.map((payment, index) => {
-                    const order = customerOrders.find(o => o.__backendId === payment.orderId);
-                    const isSettled = order?.settled || false;
-                    return `
-                      <div class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col gap-1 ${isSettled ? 'opacity-60' : ''}">
-                        <div class="flex items-center gap-2">
-                          <div class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">
-                            ${index + 1}
-                          </div>
-                          <div class="flex-1 min-w-0">
-                            <div class="font-semibold text-green-600 text-sm truncate">${currency}${(payment.amount || 0).toLocaleString()}</div>
-                            <div class="text-xs text-slate-500">
-                              ${formatDate(payment.date)}${payment.time ? ' at ' + payment.time : ''}
-                              ${payment.mode ? ` • ${payment.mode === 'cash' ? '💵 Cash' : payment.mode === 'phonepay' ? '📱 PhonePe' : payment.mode === 'gpay' ? '💳 Google Pay' : payment.mode === 'paytm' ? '💰 Paytm' : '🏦 Bank'}` : ''}
-                              ${payment.note ? ' • ' + escapeHtml(payment.note) : ''}
+            </div>
+            <div id="payments-${customerId}" class="hidden" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+              <div class="p-4 bg-slate-50 border-t border-slate-200">
+                <!-- Orders Section -->
+                <div class="mb-4">
+                  <h4 class="font-semibold text-slate-700 mb-3">Orders</h4>
+                  <div class="space-y-2">
+                    ${customerOrders.map((order, idx) => `
+                      <div class="bg-white border border-slate-200 rounded-lg p-3 ${order.settled ? 'opacity-60' : ''}">
+                        <div class="flex justify-between items-start">
+                          <div class="flex-1">
+                            <div class="font-semibold text-slate-800">${escapeHtml(order.product_name || 'N/A')}</div>
+                            <div class="text-xs text-slate-500 mt-1">
+                              <span class="inline-block mr-3">📅 Order: ${formatDate(order.issue_date)}</span>
+                              <span class="inline-block mr-3">🚚 Delivery: ${order.delivery_date ? formatDate(order.delivery_date) : 'N/A'}</span>
+                              <span class="inline-block">📦 Qty: ${order.quantity || 0} ${order.length && order.width ? `(${order.length}×${order.width}${order.dimension_unit || 'cm'})` : ''}</span>
+                              ${order.cutting_length && order.cutting_width ? `<span class="inline-block ml-3">✂️ Cut: ${order.cutting_length}×${order.cutting_width}${order.cutting_unit || 'cm'}</span>` : ''}
                             </div>
-                            ${payment.orderProduct ? `<div class="text-xs text-slate-400">Order: ${escapeHtml(payment.orderProduct)} ${isSettled ? '✓ Settled' : ''}</div>` : ''}
-                            ${payment.proof ? `<button onclick=\"showPaymentProof('${payment.proof}')\" class=\"text-xs text-blue-600 hover:text-blue-800 mt-1\">📎 View Proof</button>` : ''}
+                            <div class="flex gap-3 mt-2 text-xs">
+                              <span class="text-slate-600">Amount: ${currency}${(order.price || 0).toLocaleString()}</span>
+                              <span class="text-green-600">Paid: ${currency}${(order.amount_paid || 0).toLocaleString()}</span>
+                              ${order.balance > 0 ? `<span class="text-red-600">Balance: ${currency}${(order.balance || 0).toLocaleString()}</span>` : '<span class="text-green-600 font-semibold">✓ Settled</span>'}
+                            </div>
+                            ${order.promised_payment_date && order.balance > 0 ? `<div class="text-xs text-orange-600 font-semibold mt-1">🗓️ To collect by: ${formatDate(order.promised_payment_date)}</div>` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Payment Transactions Section -->
+                <h4 class="font-semibold text-slate-700 mb-3">Payment Transactions</h4>
+                ${allPayments.length > 0 ? `
+                  <div class="space-y-2">
+                    ${allPayments.map((payment, index) => {
+          const order = customerOrders.find(o => o.__backendId === payment.orderId);
+          const isSettled = order?.settled || false;
+          return `
+                      <div class="bg-white border border-slate-200 rounded-lg p-3 flex justify-between items-center ${isSettled ? 'opacity-60' : ''}">
+                        <div class="flex-1">
+                          <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">
+                              ${index + 1}
+                            </div>
+                            <div>
+                              <div class="font-semibold text-green-600">${currency}${(payment.amount || 0).toLocaleString()}</div>
+                              <div class="text-xs text-slate-500">
+                                ${formatDate(payment.date)}${payment.time ? ' at ' + payment.time : ''}
+                                ${payment.mode ? ` • ${payment.mode === 'cash' ? '💵 Cash' : payment.mode === 'phonepay' ? '📱 PhonePe' : payment.mode === 'gpay' ? '💳 Google Pay' : payment.mode === 'paytm' ? '💰 Paytm' : '🏦 Bank'}` : ''}
+                                ${payment.note ? ' • ' + escapeHtml(payment.note) : ''}
+                              </div>
+                              ${payment.orderProduct ? `<div class="text-xs text-slate-400">Order: ${escapeHtml(payment.orderProduct)} ${isSettled ? '✓ Settled' : ''}</div>` : ''}
+                              ${payment.proof ? `<button onclick="showPaymentProof('${payment.proof}')" class="text-xs text-blue-600 hover:text-blue-800 mt-1">📎 View Proof</button>` : ''}
+                            </div>
                           </div>
                         </div>
                       </div>
                     `;
-                  }).join('')}
-                </div>
-              ` : '<div class="text-center text-slate-500 py-4">No payments recorded</div>'}
-              <div class="mt-4 pt-4 border-t border-slate-300 flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-blue-600">Total Amount</div>
-                  <div class="text-base font-bold text-blue-700">${currency}${totalAmount.toLocaleString()}</div>
-                </div>
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-green-600">Total Paid</div>
-                  <div class="text-base font-bold text-green-700">${currency}${totalPaid.toLocaleString()}</div>
-                </div>
-                <div class="flex items-center justify-between">
-                  <div class="text-xs ${totalBalance > 0 ? 'text-red-600' : 'text-green-600'}">${totalBalance > 0 ? 'Balance Due' : 'Settled'}</div>
-                  <div class="text-base font-bold ${totalBalance > 0 ? 'text-red-700' : 'text-green-700'}">${currency}${Math.abs(totalBalance).toLocaleString()}</div>
+        }).join('')}
+                  </div>
+                ` : '<div class="text-center text-slate-500 py-4">No payments recorded</div>'}
+                
+                <div class="mt-4 pt-4 border-t border-slate-300">
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2">
+                      <div class="text-xs text-blue-600">Total Amount</div>
+                      <div class="text-lg font-bold text-blue-700">${currency}${totalAmount.toLocaleString()}</div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded p-2">
+                      <div class="text-xs text-green-600">Total Paid</div>
+                      <div class="text-lg font-bold text-green-700">${currency}${totalPaid.toLocaleString()}</div>
+                    </div>
+                    <div class="bg-${totalBalance > 0 ? 'red' : 'green'}-50 border border-${totalBalance > 0 ? 'red' : 'green'}-200 rounded p-2">
+                      <div class="text-xs text-${totalBalance > 0 ? 'red' : 'green'}-600">${totalBalance > 0 ? 'Balance Due' : 'Settled'}</div>
+                      <div class="text-lg font-bold text-${totalBalance > 0 ? 'red' : 'green'}-700">${currency}${Math.abs(totalBalance).toLocaleString()}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
         `;
       }).join('');
 
@@ -2849,25 +2822,38 @@
         const tempStyle = document.getElementById('temp-hide-watermark');
         if (tempStyle) tempStyle.remove();
 
-        // Convert canvas to base64 PNG
-        const pngData = canvas.toDataURL('image/png');
-        const fileName = `receipt-${order.customer_name || 'order'}.png`;
+        // Convert canvas to blob
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast('Failed to generate image', 'error');
+            return;
+          }
 
-        // Send PNG to backend
-        const response = await fetch('/api/share-receipt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pngData, fileName })
-        });
-        const result = await response.json();
-        if (result.success) {
-          showToast('Receipt shared to server!', 'success');
-        } else {
-          showToast('Failed to share receipt: ' + (result.message || 'Unknown error'), 'error');
-        }
+          const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
+
+          // Try to share using Web Share API
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: `Receipt - ${order.customer_name}`,
+                text: `Order receipt for ${order.customer_name}`
+              });
+              showToast('Receipt shared successfully!', 'success');
+            } catch (error) {
+              if (error.name !== 'AbortError') {
+                // Fallback: download the image
+                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+              }
+            }
+          } else {
+            // Fallback: download the image
+            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+          }
+        }, 'image/png');
       } catch (error) {
-        console.error('Error capturing or sharing receipt:', error);
-        showToast('Failed to share receipt. Error: ' + error.message, 'error');
+        console.error('Error capturing receipt:', error);
+        showToast('Failed to generate image. Error: ' + error.message, 'error');
       }
     }
 
@@ -3076,34 +3062,27 @@
     }
 
     function renderProduction() {
-            // Blur daily production records and production summary for user logins
+            // Always blur/lock all company data except production entry for non-admin users
             const user = api.user;
-            // Ensure blur is applied after DOM updates
-            setTimeout(() => {
-              const summaryCard = document.getElementById('production-summary-card');
-              const detailsCard = document.getElementById('production-details-card');
-              if (user && user.role === 'user') {
-                if (summaryCard) {
-                  summaryCard.style.filter = 'blur(6px)';
-                  summaryCard.style.pointerEvents = 'none';
-                  summaryCard.innerHTML = '<div class="text-center text-slate-400 py-8 text-lg font-semibold">🔒 Production summary is hidden for users</div>';
-                }
-                if (detailsCard) {
-                  detailsCard.style.filter = 'blur(6px)';
-                  detailsCard.style.pointerEvents = 'none';
-                  detailsCard.innerHTML = '<div class="text-center text-slate-400 py-8 text-lg font-semibold">🔒 Production records are hidden for users</div>';
-                }
-              } else if (user && user.role === 'admin') {
-                if (summaryCard) {
-                  summaryCard.style.filter = '';
-                  summaryCard.style.pointerEvents = '';
-                }
-                if (detailsCard) {
-                  detailsCard.style.filter = '';
-                  detailsCard.style.pointerEvents = '';
-                }
-              }
-            }, 300);
+            if (user && user.role !== 'admin') {
+              setTimeout(() => {
+                const blurTargets = [
+                  document.getElementById('content-dashboard'),
+                  document.getElementById('production-summary-card'),
+                  document.getElementById('worker-summary-card'),
+                  document.getElementById('orders-section'),
+                  document.getElementById('attendance-section'),
+                  document.getElementById('investments-section'),
+                  document.getElementById('products-section')
+                ];
+                blurTargets.forEach(el => {
+                  if (el) {
+                    el.style.filter = 'blur(6px)';
+                    el.style.pointerEvents = 'none';
+                  }
+                });
+              }, 100);
+            }
       const currency = getCurrency();
       const allWorkers = getWorkers();
       // Exclude placeholder records (empty production entries)
@@ -3677,7 +3656,7 @@
               </div>
             </div>
             <div class="flex gap-1" onclick="event.stopPropagation()">
-              <button onclick="editItem('${worker.__backendId}', 'master_worker')" class="p-1 text-blue-600 hover:text-blue-800" title="Edit">
+              <button onclick="editItem('${worker.__backendId}', 'worker-master')" class="p-1 text-blue-600 hover:text-blue-800" title="Edit">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
@@ -3838,22 +3817,15 @@
       });
 
       container.innerHTML = Object.values(byWorker).map((data, index) => {
+        const presentCount = data.records.filter(r => r.status === 'present').length;
+        const halfDayCount = data.records.filter(r => r.status === 'half-day').length;
+        const absentCount = data.records.filter(r => r.status === 'absent').length;
         const worker = data.worker;
         const workerId = worker.__backendId;
 
-        // Only count the last status per day for each worker
-        const recordsByDate = {};
-        data.records.forEach(r => {
-          recordsByDate[r.date] = r; // Overwrite, so last record for date remains
-        });
-        const lastRecords = Object.values(recordsByDate);
-        const presentCount = lastRecords.filter(r => r.status === 'present').length;
-        const halfDayCount = lastRecords.filter(r => r.status === 'half-day').length;
-        const absentCount = lastRecords.filter(r => r.status === 'absent').length;
-
         // Get the month from records for salary calculation
-        const month = lastRecords.length > 0 && lastRecords[0].date
-          ? lastRecords[0].date.substring(0, 7)
+        const month = data.records.length > 0 && data.records[0].date
+          ? data.records[0].date.substring(0, 7)
           : new Date().toISOString().substring(0, 7);
 
         // Build calendar view if dateRange is provided
@@ -3863,7 +3835,7 @@
             <div class="border-t border-slate-200 pt-3 mt-3">
               <div class="grid grid-cols-7 gap-1">
                 ${dateRange.dates.map(dateStr => {
-            const record = lastRecords.find(r => r.date === dateStr);
+            const record = data.records.find(r => r.date === dateStr);
             const status = record?.status;
             const date = new Date(dateStr);
             const day = date.getDate();
@@ -4177,12 +4149,7 @@
     async function markAttendance(workerId, date, status) {
       try {
         const attendanceRecords = getAttendance();
-        // Remove all other attendance records for this worker and date except the one being updated/created
-        let existingRecord = attendanceRecords.find(a => a.worker_id === workerId && a.date === date);
-        const duplicates = attendanceRecords.filter(a => a.worker_id === workerId && a.date === date && a !== existingRecord);
-        for (const dup of duplicates) {
-          if (dup.__backendId) await window.dataSdk.delete(dup.__backendId);
-        }
+        const existingRecord = attendanceRecords.find(a => a.worker_id === workerId && a.date === date);
         const oldStatus = existingRecord?.status;
 
         // Get worker name to store in attendance record
@@ -4193,11 +4160,6 @@
           'Unknown Worker';
 
         if (existingRecord) {
-          // If status is unchanged, do nothing
-          if (existingRecord.status === status) {
-            showToast('Attendance already marked as ' + status, 'info');
-            return;
-          }
           // Update existing - preserve the worker name if it exists
           const result = await window.dataSdk.update({
             ...existingRecord,
@@ -4463,7 +4425,7 @@
         return;
       }
 
-      // Group workers by date (legacy, not used below)
+      // Group workers by date
       const workersByDate = {};
       workers.forEach(worker => {
         const date = worker.date || 'No Date';
@@ -4473,142 +4435,125 @@
         workersByDate[date].push(worker);
       });
 
-      // Prepare container and byWorker for attendance history rendering
-      const container = document.getElementById('attendance-history-container');
-      const byWorker = {};
-      workers.forEach(worker => {
-        if (!byWorker[worker.__backendId]) {
-          byWorker[worker.__backendId] = { worker: worker, isDeleted: false, records: [] };
-        }
-        byWorker[worker.__backendId].records.push(worker);
+      // Sort dates in descending order (newest first)
+      const sortedDates = Object.keys(workersByDate).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        return new Date(b) - new Date(a);
       });
 
-      // Render grouped by worker
-      // Ensure dateRange is defined to avoid ReferenceError
-      const dateRangeSafe = typeof dateRange !== 'undefined' ? dateRange : null;
-      container.innerHTML = Object.values(byWorker).map((data, index) => {
-        const worker = data.worker;
-        const workerId = worker.__backendId;
+      // Render grouped by date
+      tbody.innerHTML = sortedDates.map((date, dateIndex) => {
+        const dateWorkers = workersByDate[date];
+        const dateTotal = dateWorkers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
+        const dateHours = dateWorkers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
 
-        // Calculate attendance counts for this worker
-        const presentCount = data.records.filter(r => r.status === 'present').length;
-        const halfDayCount = data.records.filter(r => r.status === 'half-day').length;
-        const absentCount = data.records.filter(r => r.status === 'absent').length;
-
-        // Get the month from records for salary calculation
-        const month = data.records.length > 0 && data.records[0].date
-          ? data.records[0].date.substring(0, 7)
-          : new Date().toISOString().substring(0, 7);
-
-        // Build calendar view if dateRange is provided
-        let calendarHTML = '';
-        if (dateRangeSafe && dateRangeSafe.dates && dateRangeSafe.dates.length > 0) {
-          calendarHTML = `
-            <div class="border-t border-slate-200 pt-3 mt-3">
-              <div class="grid grid-cols-7 gap-1">
-                ${dateRangeSafe.dates.map(dateStr => {
-            const record = data.records.find(r => r.date === dateStr);
-            const status = record?.status;
-            const date = new Date(dateStr);
-            const day = date.getDate();
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-
-            let bgColor = 'bg-slate-100';
-            let textColor = 'text-slate-400';
-            let badge = '';
-
-            if (status === 'present') {
-              bgColor = 'bg-green-500';
-              textColor = 'text-white';
-              badge = '✓';
-            } else if (status === 'absent') {
-              bgColor = 'bg-red-500';
-              textColor = 'text-white';
-              badge = '✗';
-            } else if (status === 'half-day') {
-              bgColor = 'bg-orange-500';
-              textColor = 'text-white';
-              badge = '◐';
-            }
-
-            return `
-                    <div class="text-center">
-                      <div class="text-xs text-slate-500 mb-1">${dayName}</div>
-                      <div class="${bgColor} ${textColor} rounded-lg p-2 font-bold text-sm">
-                        ${day}
-                        ${badge ? `<div class="text-xs">${badge}</div>` : ''}
-                      </div>
-                    </div>
-                  `;
-          }).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="card-gradient shadow-lg border ${data.isDeleted ? 'border-orange-300' : 'border-slate-200'} rounded-xl overflow-hidden mb-4">
-            <div class="p-4 cursor-pointer hover:opacity-90 transition-opacity" onclick="toggleWorkerHistory('${workerId}')">
-              <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-gradient-to-br ${data.isDeleted ? 'from-orange-400 to-red-500' : 'from-blue-500 to-purple-600'} rounded-full flex items-center justify-center text-white font-bold">
-                    ${escapeHtml(worker?.name || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div class="font-semibold text-lg">${escapeHtml(worker?.name || 'Unknown')}</div>
-                    ${data.isDeleted ? '<div class="text-xs text-orange-600 font-semibold">⚠️ Worker Deleted</div>' : ''}
-                  </div>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="text-sm text-slate-600">
-                    <span class="text-green-600 font-semibold">${presentCount}✓</span> / 
-                    <span class="text-orange-600 font-semibold">${halfDayCount}◐</span> / 
-                    <span class="text-red-600 font-semibold">${absentCount}✗</span>
-                  </div>
-                  <svg id="chevron-${workerId}" class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div id="history-${workerId}" class="hidden" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
-              <div class="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-t border-slate-200">
-                <div class="grid grid-cols-3 gap-3 mb-3">
-                  <div class="bg-white border border-green-200 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs text-green-600 font-medium">Present</div>
-                    <div class="text-xl font-bold text-green-700">${presentCount}</div>
-                  </div>
-                  <div class="bg-white border border-orange-200 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs text-orange-600 font-medium">Half Day</div>
-                    <div class="text-xl font-bold text-orange-700">${halfDayCount}</div>
-                  </div>
-                  <div class="bg-white border border-red-200 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs text-red-600 font-medium">Absent</div>
-                    <div class="text-xl font-bold text-red-700">${absentCount}</div>
-                  </div>
-                </div>
-                ${calendarHTML}
-              </div>
-            </div>
-          </div>
+        const dateHeader = `
+          <tr class="bg-gradient-to-r from-slate-50 to-blue-50 border-t-2 border-slate-300">
+            <td colspan="7" class="px-4 py-3 font-bold text-lg text-slate-700">
+              📅 ${date !== 'No Date' ? formatDate(date) : 'No Date'} 
+              <span class="text-sm font-normal ml-3 text-slate-600">
+                ${dateWorkers.length} worker${dateWorkers.length !== 1 ? 's' : ''} • 
+                ${dateTotal.toLocaleString()} units • 
+                ${dateHours.toFixed(1)}h total
+              </span>
+            </td>
+          </tr>
         `;
+
+        const dateRows = dateWorkers.map(worker => {
+          const productivity = worker.hours_worked > 0 ? (worker.units_produced / worker.hours_worked) : 0;
+          const isLowProductivity = productivity < 5;
+
+          return `
+            <tr class="table-row border-b border-slate-100 ${isLowProductivity ? 'bg-amber-50' : ''}">
+              <td class="px-4 py-3 text-slate-600">${formatDate(worker.date)}</td>
+              <td class="px-4 py-3 font-medium">${escapeHtml(worker.worker_name || '')}</td>
+              <td class="px-4 py-3">
+                ${worker.background_work ?
+              `<span class="text-slate-700">${escapeHtml(worker.background_work)}</span>
+                   <span class="text-xs text-slate-500 block">Background Work</span>`
+              : escapeHtml(worker.product_name || '')}
+              </td>
+              <td class="px-4 py-3 font-semibold text-blue-600">${(worker.units_produced || 0).toLocaleString()} ${escapeHtml(worker.production_unit || 'pcs')}</td>
+              <td class="px-4 py-3 text-slate-600">${worker.hours_worked || 0}h</td>
+              <td class="px-4 py-3 ${isLowProductivity ? 'text-amber-600 font-semibold' : 'text-slate-700'}">${productivity.toFixed(1)} ${isLowProductivity ? '⚠️' : ''}</td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button onclick="editItem('${worker.__backendId}', 'worker')" class="text-blue-600 hover:text-blue-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button onclick="deleteItem('${worker.__backendId}')" class="text-red-600 hover:text-red-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
         }).join('');
 
-      // Calculate required production based on unsettled orders
+        // Add spacing row between dates (except for the last group)
+        const spacingRow = dateIndex < sortedDates.length - 1 ?
+          '<tr class="bg-slate-100"><td colspan="7" class="h-3"></td></tr>' : '';
+
+        return dateHeader + dateRows + spacingRow;
+      }).join('');
+    }
+
+    function renderProductionTargets() {
+      const currency = getCurrency();
+      const orders = getFilteredData(getOrders()).filter(o => !o.settled);
+      const production = getFilteredData(getProduction());
+      const workers = getFilteredData(getWorkers());
+      const container = document.getElementById('production-targets');
+
+      if (orders.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-center py-8">No pending orders to calculate targets.</p>';
+        return;
+      }
+
+      // Group orders by product
       const ordersByProduct = {};
-      const filteredOrders = getFilteredData(getOrders()).filter(o => !o.settled);
-      filteredOrders.forEach(order => {
-        const product = order.product_name;
-        if (!ordersByProduct[product]) {
-          ordersByProduct[product] = {
-            required: 0,
-            earliestDelivery: order.delivery_date || null
-          };
-        }
-        ordersByProduct[product].required += order.quantity || 0;
-        // Track earliest delivery date
-        if (order.delivery_date && (!ordersByProduct[product].earliestDelivery || new Date(order.delivery_date) < new Date(ordersByProduct[product].earliestDelivery))) {
-          ordersByProduct[product].earliestDelivery = order.delivery_date;
+      orders.forEach(order => {
+        // Handle both multi-product and legacy single-product orders
+        if (order.products && order.products.length > 0) {
+          // Multi-product order
+          order.products.forEach(prod => {
+            const product = prod.product_name;
+            if (!product) return; // Skip if no product name
+
+            if (!ordersByProduct[product]) {
+              ordersByProduct[product] = { required: 0, orders: [], earliestDelivery: null };
+            }
+            ordersByProduct[product].required += prod.quantity || 0;
+            ordersByProduct[product].orders.push(order);
+
+            if (order.delivery_date) {
+              if (!ordersByProduct[product].earliestDelivery || order.delivery_date < ordersByProduct[product].earliestDelivery) {
+                ordersByProduct[product].earliestDelivery = order.delivery_date;
+              }
+            }
+          });
+        } else {
+          // Legacy single-product order
+          const product = order.product_name;
+          if (!product) return; // Skip if no product name
+
+          if (!ordersByProduct[product]) {
+            ordersByProduct[product] = { required: 0, orders: [], earliestDelivery: null };
+          }
+          ordersByProduct[product].required += order.quantity || 0;
+          ordersByProduct[product].orders.push(order);
+
+          if (order.delivery_date) {
+            if (!ordersByProduct[product].earliestDelivery || order.delivery_date < ordersByProduct[product].earliestDelivery) {
+              ordersByProduct[product].earliestDelivery = order.delivery_date;
+            }
+          }
         }
       });
 
@@ -4621,7 +4566,11 @@
       });
 
       // Calculate worker productivity - count only active master workers, not deleted ones
-      // ...existing code...
+      const activeMasterWorkers = getMasterWorkers(); // Get only existing master workers
+      const uniqueWorkers = activeMasterWorkers.length; // Count actual active workers
+      const totalHours = workers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
+      const totalOutput = workers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
+      const avgProductivity = totalHours > 0 && totalOutput > 0 ? totalOutput / totalHours : 10; // default 10 units/hour if no data
 
       container.innerHTML = `
         <div class="space-y-4">
@@ -5305,7 +5254,7 @@
       } else if (type === 'production') {
         title.textContent = item ? 'Edit Production' : 'Add Production';
         fields.innerHTML = getProductionFields(item);
-      } else if (type === 'master_worker') {
+      } else if (type === 'worker-master') {
         title.textContent = item ? 'Edit Worker' : 'Add Worker';
         fields.innerHTML = getMasterWorkerFields(item);
       } else if (type === 'worker') {
@@ -7187,9 +7136,9 @@
               if (!result.isOk) throw new Error('Failed to create');
             }
           }
-        } else if (currentModalType === 'master_worker') {
+        } else if (currentModalType === 'worker-master') {
           const record = {
-            type: 'master_worker',
+            type: 'worker-master',
             name: data.name,
             contact: data.contact || '',
             monthly_wage: parseFloat(data.monthly_wage) || 0,
@@ -7784,78 +7733,82 @@
       const filteredSales = getFilteredData(getSales());
       const filteredOrders = getFilteredData(getOrders());
 
-    // Share or download receipt as image
-    async function shareReceipt(order) {
-      // Check if html2canvas is available
-      if (typeof html2canvas === 'undefined') {
-        showToast('Image library not loaded. Please refresh the page.', 'error');
-        return;
-      }
+      // Calculate required production based on orders
+      const ordersByProduct = {};
+      filteredOrders.filter(o => !o.settled).forEach(order => {
+        const product = order.product_name;
+        if (!ordersByProduct[product]) ordersByProduct[product] = 0;
+        ordersByProduct[product] += order.quantity || 0;
+      });
 
-      const receiptContent = document.getElementById('receipt-content');
-      if (!receiptContent) return;
+      // Check production vs orders
+      const productionByProduct = {};
+      filteredProduction.forEach(prod => {
+        const product = prod.product_name;
+        if (!productionByProduct[product]) productionByProduct[product] = 0;
+        productionByProduct[product] += prod.units_produced || 0;
+      });
 
-      showToast('Generating image...', 'info');
+      Object.keys(ordersByProduct).forEach(product => {
+        const required = ordersByProduct[product];
+        const produced = productionByProduct[product] || 0;
+        if (produced < required) {
+          alerts.push({
+            type: 'danger',
+            title: `Production Below Target: ${product}`,
+            message: `Required: ${required}, Produced: ${produced}. Short by ${required - produced} units.`
+          });
+        }
+      });
 
-      try {
-        // Temporarily hide the watermark to avoid CORS issues
-        const style = document.createElement('style');
-        style.id = 'temp-hide-watermark';
-        style.textContent = '#receipt-content::before { display: none !important; }';
-        document.head.appendChild(style);
+      // Check for high wastage
+      filteredProduction.forEach(prod => {
+        if (prod.wastage_percent > 15) {
+          alerts.push({
+            type: 'warning',
+            title: `High Wastage Alert: ${prod.product_name}`,
+            message: `Wastage at ${prod.wastage_percent}% on ${formatDate(prod.date)}. Review production process.`
+          });
+        }
+      });
 
-        // Find and temporarily hide the logo image
-        const logoImg = receiptContent.querySelector('img[alt="Shri Mata Logo"]');
-        const originalDisplay = logoImg ? logoImg.style.display : null;
-        if (logoImg) logoImg.style.display = 'none';
+      // Check for low worker productivity
+      filteredWorkers.forEach(worker => {
+        const productivity = worker.hours_worked > 0 ? (worker.units_produced / worker.hours_worked) : 0;
+        if (productivity < 5) {
+          alerts.push({
+            type: 'warning',
+            title: `Low Productivity: ${worker.worker_name}`,
+            message: `Only ${productivity.toFixed(1)} units/hour on ${formatDate(worker.date)} for ${worker.product_name}.`
+          });
+        }
+      });
 
-        // Wait a moment
-        await new Promise(resolve => setTimeout(resolve, 100));
+      // Check selling price vs cost
+      filteredSales.forEach(sale => {
+        const productions = filteredProduction.filter(p => p.product_name === sale.name);
+        if (productions.length > 0) {
+          const totalCost = productions.reduce((sum, p) => sum + p.total_cost, 0);
+          const totalUnits = productions.reduce((sum, p) => sum + p.units_produced, 0);
+          const costPerUnit = totalUnits > 0 ? totalCost / totalUnits : 0;
+          const sellingPricePerUnit = sale.quantity > 0 ? sale.selling_price / sale.quantity : sale.selling_price;
 
-        // Capture the receipt as canvas
-        const canvas = await html2canvas(receiptContent, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          logging: false,
-          allowTaint: true,
-          useCORS: false
-        });
-
-        // Restore logo
-        if (logoImg && originalDisplay !== null) logoImg.style.display = originalDisplay;
-        const tempStyle = document.getElementById('temp-hide-watermark');
-        if (tempStyle) tempStyle.remove();
-
-        // Convert canvas to blob
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            showToast('Failed to generate image', 'error');
-            return;
+          if (sellingPricePerUnit < costPerUnit) {
+            alerts.push({
+              type: 'danger',
+              title: `Selling Below Cost: ${sale.name}`,
+              message: `Sale to ${sale.customer_name} at ${currency}${sellingPricePerUnit.toFixed(2)}/unit vs cost ${currency}${costPerUnit.toFixed(2)}/unit. Loss: ${currency}${((costPerUnit - sellingPricePerUnit) * sale.quantity).toFixed(2)}`
+            });
           }
-          const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({
-                files: [file],
-                title: `Receipt - ${order.customer_name}`,
-                text: `Order receipt for ${order.customer_name}`
-              });
-              showToast('Receipt shared successfully!', 'success');
-            } catch (error) {
-              if (error.name !== 'AbortError') {
-                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
-              }
-            }
-          } else {
-            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
-          }
-        }, 'image/png');
-      } catch (error) {
-        console.error('Error capturing receipt:', error);
-        showToast('Failed to generate image. Error: ' + error.message, 'error');
-      }
+        }
+      });
+
+      // Update alerts count badge
+      document.getElementById('alerts-count').textContent = alerts.length;
+
+      return alerts;
     }
-    }
+
     function showAlerts() {
       const alerts = updateAlerts();
       const modal = document.getElementById('modal');
@@ -7916,8 +7869,8 @@
       const deletedItemType = deleteTarget.type; // Store type before deletion
 
       try {
-        // Special handling for master_worker deletion
-        if (deleteTarget.type === 'master_worker') {
+        // Special handling for worker-master deletion
+        if (deleteTarget.type === 'worker-master') {
           await handleWorkerDeletion(deleteTarget);
         }
 
@@ -8088,21 +8041,17 @@
       const productionBadge = document.getElementById('production-badge');
 
       // Check attendance (show red dot after 10:00 AM if not filled)
-      if (attendanceBadge) {
-        if (currentHour >= 10 && !checkTodayAttendance()) {
-          attendanceBadge.classList.remove('hidden');
-        } else {
-          attendanceBadge.classList.add('hidden');
-        }
+      if (currentHour >= 10 && !checkTodayAttendance()) {
+        attendanceBadge.classList.remove('hidden');
+      } else {
+        attendanceBadge.classList.add('hidden');
       }
 
       // Check production (show red dot after 7:00 PM if not filled)
-      if (productionBadge) {
-        if (currentHour >= 19 && !checkTodayProduction()) {
-          productionBadge.classList.remove('hidden');
-        } else {
-          productionBadge.classList.add('hidden');
-        }
+      if (currentHour >= 19 && !checkTodayProduction()) {
+        productionBadge.classList.remove('hidden');
+      } else {
+        productionBadge.classList.add('hidden');
       }
     }
 
