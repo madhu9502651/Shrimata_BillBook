@@ -2883,7 +2883,7 @@
 
           const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
 
-          // Try to share using Web Share API
+          // Try to share using Web Share API (works on mobile browsers)
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
               await navigator.share({
@@ -2894,13 +2894,14 @@
               showToast('Receipt shared successfully!', 'success');
             } catch (error) {
               if (error.name !== 'AbortError') {
-                // Fallback: download the image
                 downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+                showToast('Image downloaded. You can now share it manually.', 'info');
               }
             }
           } else {
-            // Fallback: download the image
+            // Desktop fallback: download and notify
             downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+            showToast('Image downloaded. You can now share it manually.', 'info');
           }
         }, 'image/png');
       } catch (error) {
