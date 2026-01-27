@@ -2878,9 +2878,14 @@
                 downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
               }
             }
+          } else if (navigator.share) {
+            // Fallback: share as text receipt
+            await shareReceiptAsText();
+            showToast('Receipt shared as text!', 'info');
           } else {
             // Fallback: download the image
             downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
+            showToast('Sharing not supported on this device. Image downloaded.', 'warning');
           }
         }, 'image/png');
       } catch (error) {
