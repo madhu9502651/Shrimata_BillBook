@@ -12,6 +12,7 @@ router.post('/login', async (req, res) => {
 
     if (!username || !password) {
       console.log('Missing username or password');
+      res.setHeader('Content-Type', 'application/json');
       return res.status(400).json({ error: 'Username and password required' });
     }
 
@@ -20,6 +21,7 @@ router.post('/login', async (req, res) => {
     console.log('User found:', user ? user.username : null, 'Active:', user ? user.isActive : null);
     if (!user || !user.isActive) {
       console.log('User not found or inactive');
+      res.setHeader('Content-Type', 'application/json');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -29,6 +31,7 @@ router.post('/login', async (req, res) => {
     console.log('Password match:', isMatch);
     if (!isMatch) {
       console.log('Password did not match');
+      res.setHeader('Content-Type', 'application/json');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -47,6 +50,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: process.env.SESSION_TIMEOUT || '24h' }
     );
 
+    res.setHeader('Content-Type', 'application/json');
     res.json({
       token,
       user: {
@@ -58,6 +62,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({ error: 'Login failed' });
   }
 });

@@ -35,6 +35,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/data', dataRoutes);
 
+// Generic error handler: always return JSON
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.setHeader('Content-Type', 'application/json');
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

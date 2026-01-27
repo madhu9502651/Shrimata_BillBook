@@ -1157,6 +1157,8 @@
         renderAll();
       }
     };
+    // Ensure polling and SDK use the same handler
+    window.dataHandler = dataHandler;
 
     // Migration: Add default units to orders without quantity_unit
     async function migrateOrderUnits() {
@@ -1388,6 +1390,7 @@
       showLoading(false);
     }
 
+    
     function populateMonthSelector() {
       const selector = document.getElementById('month-selector');
       const today = new Date();

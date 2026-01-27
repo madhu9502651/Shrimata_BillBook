@@ -27,12 +27,22 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-        if (!response.ok) {
-          const errData = await response.json();
-          alert('Login error: ' + (errData.error || 'Invalid credentials'));
-          throw new Error(errData.error || 'Invalid credentials');
+        let data;
+        try {
+          // Try to parse JSON
+          data = await response.json();
+        } catch (jsonErr) {
+          // Log raw response for debugging
+          const rawText = await response.text();
+          console.error('Raw login response:', rawText);
+          document.getElementById('login-error').textContent = 'Server error: Invalid response format.';
+          document.getElementById('login-error').classList.remove('hidden');
+          return;
         }
-        const data = await response.json();
+        if (!response.ok) {
+          alert('Login error: ' + (data.error || 'Invalid credentials'));
+          throw new Error(data.error || 'Invalid credentials');
+        }
         // Save token and user info to localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
