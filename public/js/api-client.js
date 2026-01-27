@@ -1,3 +1,12 @@
+  // Share receipt PNG to backend
+  async createShareReceipt({ pngData, fileName }) {
+    const response = await fetch(`${this.baseURL}/share-receipt`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ pngData, fileName })
+    });
+    return this.handleResponse(response);
+  }
 // API Client for secure communication with backend
 class SecureAPI {
   constructor() {
