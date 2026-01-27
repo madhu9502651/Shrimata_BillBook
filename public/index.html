@@ -4466,7 +4466,7 @@
         return;
       }
 
-      // Group workers by date
+      // Group workers by date (legacy, not used below)
       const workersByDate = {};
       workers.forEach(worker => {
         const date = worker.date || 'No Date';
@@ -4476,14 +4476,17 @@
         workersByDate[date].push(worker);
       });
 
-      // Sort dates in descending order (newest first)
-      const sortedDates = Object.keys(workersByDate).sort((a, b) => {
-        if (a === 'No Date') return 1;
-        if (b === 'No Date') return -1;
-        return new Date(b) - new Date(a);
+      // Prepare container and byWorker for attendance history rendering
+      const container = document.getElementById('attendance-history-container');
+      const byWorker = {};
+      workers.forEach(worker => {
+        if (!byWorker[worker.__backendId]) {
+          byWorker[worker.__backendId] = { worker: worker, isDeleted: false, records: [] };
+        }
+        byWorker[worker.__backendId].records.push(worker);
       });
 
-      // Render grouped by date
+      // Render grouped by worker
       container.innerHTML = Object.values(byWorker).map((data, index) => {
         const worker = data.worker;
         const workerId = worker.__backendId;
