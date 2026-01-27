@@ -6,6 +6,7 @@ const { authMiddleware, adminOnly } = require('../middleware/auth');
 // Get all data (filtered by role)
 router.get('/', authMiddleware, async (req, res) => {
   try {
+    console.log('Data fetch query:', req.query);
     const { type, startDate, endDate } = req.query;
     const query = {};
 
@@ -42,7 +43,13 @@ router.get('/', authMiddleware, async (req, res) => {
       }
     }
 
-    const data = await Data.find(query).sort({ createdAt: -1 });
+    let data;
+    try {
+      data = await Data.find(query).sort({ createdAt: -1 });
+    } catch (dbErr) {
+      console.error('Data find error:', dbErr);
+      return res.status(500).json({ error: 'Database error: ' + dbErr.message });
+    }
     console.log(`[DB] GET all data: found ${data.length} records`);
     res.json({ data });
   } catch (error) {
@@ -69,18 +76,36 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { type } = req.body;
+    console.log('Create record payload:', req.body);
+    console.log('Authenticated user:', req.user);
 
     // Users can only create worker records
     if (req.user.role === 'user' && type !== 'worker') {
       return res.status(403).json({ error: 'Users can only add production records' });
     }
 
-    const record = new Data({
-      ...req.body,
-      createdBy: req.user.userId
-    });
+    // Validate type
+    const allowedTypes = ['order', 'worker', 'product', 'roll', 'investment', 'household', 'master_worker', 'production', 'attendance'];
+    if (!type || !allowedTypes.includes(type)) {
+      return res.status(400).json({ error: 'Invalid or missing type field' });
+    }
 
-    await record.save();
+    // Validate createdBy as ObjectId
+    if (!req.user.userId || !/^[a-fA-F0-9]{24}$/.test(req.user.userId)) {
+      return res.status(400).json({ error: 'Invalid userId for createdBy: ' + req.user.userId });
+    }
+
+    let record;
+    try {
+      record = new Data({
+        ...req.body,
+        createdBy: req.user.userId
+      });
+      await record.save();
+    } catch (err) {
+      console.error('Mongoose validation error:', err);
+      return res.status(400).json({ error: 'Mongoose validation error: ' + err.message });
+    }
     console.log(`[DB] CREATE record: type=${type}, id=${record._id}`);
     res.status(201).json({ data: record });
   } catch (error) {
