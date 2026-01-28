@@ -2945,20 +2945,16 @@
         return new Promise(resolve => { img.onload = img.onerror = resolve; });
       }));
 
-      // Temporarily hide the watermark to avoid CORS issues
-      const style = document.createElement('style');
-      style.id = 'temp-hide-watermark';
-      style.textContent = '#receipt-content::before { display: none !important; }';
-      document.head.appendChild(style);
 
       // Wait a moment for layout
       await new Promise(resolve => setTimeout(resolve, 100));
 
       try {
-        // Capture the receipt as canvas
+
+        // Capture the receipt as canvas with higher scale for clarity
         const canvas = await html2canvas(receiptContent, {
           backgroundColor: '#ffffff',
-          scale: 2,
+          scale: 4, // Higher scale for better clarity
           logging: false,
           allowTaint: true,
           useCORS: false
@@ -2990,8 +2986,7 @@
           element.style.maxHeight = style.maxHeight;
           element.style.overflow = style.overflow;
         });
-        const tempStyle = document.getElementById('temp-hide-watermark');
-        if (tempStyle) tempStyle.remove();
+        // No watermark hiding needed; watermark will be visible in the image
 
         // Convert canvas to base64 PNG and Blob
         const pngData = canvas.toDataURL('image/png');
