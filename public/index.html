@@ -615,122 +615,10 @@
                     showToast('Failed to save personal expense', 'error');
                   }
                 };
-
-                function renderPersonalExpenses() {
-                  const tbody = document.getElementById('personal-expenses-table');
-                  if (!personalExpenses.length) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">No personal expenses yet.</td></tr>';
-                    return;
-                  }
-                  tbody.innerHTML = personalExpenses.map(exp => `
-                    <tr>
-                      <td class="px-4 py-2">${escapeHtml(exp.name)}</td>
-                      <td class="px-4 py-2">₹${exp.amount.toLocaleString()}</td>
-                      <td class="px-4 py-2">${exp.dueDate ? formatDate(exp.dueDate) : '-'}</td>
-                      <td class="px-4 py-2 text-center">
-                        <button onclick="togglePersonalExpenseInclude('${exp.id}')" class="rounded px-2 py-1 ${exp.include ? 'bg-green-200 text-green-800' : 'bg-slate-200 text-slate-500'}">${exp.include ? 'Included' : 'Not Included'}</button>
-                      </td>
-                      <td class="px-4 py-2 text-center">
-                        <button onclick="togglePersonalExpenseSettled('${exp.id}')" class="rounded px-2 py-1 ${exp.settled ? 'bg-blue-200 text-blue-800' : 'bg-slate-200 text-slate-500'}">${exp.settled ? 'Settled' : 'Unsettled'}</button>
-                      </td>
-                      <td class="px-4 py-2 text-center">
-                        <button onclick="openPersonalExpenseModal('${exp.id}')" class="text-blue-600 hover:underline mr-2">Edit</button>
-                        <button onclick="deletePersonalExpense('${exp.id}')" class="text-red-600 hover:underline">Delete</button>
-                      </td>
-                    </tr>
-                  `).join('');
-                }
-
-                async function togglePersonalExpenseInclude(id) {
-                  const exp = personalExpenses.find(e => e.id === id);
-                  if (exp) {
-                    try {
-                      await api.updateRecord(id, { ...exp, include: !exp.include, type: 'personal_expense' });
-                      await loadPersonalExpenses();
-                    } catch (err) { showToast('Failed to update', 'error'); }
-                  }
-                }
-                async function togglePersonalExpenseSettled(id) {
-                  const exp = personalExpenses.find(e => e.id === id);
-                  if (exp) {
-                    try {
-                      await api.updateRecord(id, { ...exp, settled: !exp.settled, type: 'personal_expense' });
-                      await loadPersonalExpenses();
-                    } catch (err) { showToast('Failed to update', 'error'); }
-                  }
-                }
-                async function deletePersonalExpense(id) {
-                  try {
-                    await api.deleteRecord(id);
-                    await loadPersonalExpenses();
-                  } catch (err) { showToast('Failed to delete', 'error'); }
-                }
-
-                // Initial load
-                loadPersonalExpenses();
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <h2 class="text-xl font-bold">🧾 Personal Expenses</h2>
-                  <button id="btn-add-personal" onclick="openPersonalExpenseModal()"
-                    class="btn-primary text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg> Add Personal Expense
-                  </button>
-                </div>
-                <div class="overflow-x-auto rounded-lg shadow border border-slate-200">
-                  <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                      <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Amount</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Due Date</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Include in Expenses</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Settled</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="personal-expenses-table">
-                      <tr><td colspan="6" class="text-center py-8 text-slate-400">No personal expenses yet.</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-        <div id="content-dashboard" class="tab-content animate-fade-in">
-          <!-- Notification Permission Banner -->
-          <div id="notification-banner" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 hidden">
-            <div class="flex items-center justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <div>
-                  <div class="font-semibold text-blue-900">Enable Daily Reminders</div>
-                  <div class="text-sm text-blue-700">Get notified at 10 AM for attendance and 7 PM for production</div>
-                </div>
-              </div>
-              <button onclick="enableNotifications()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap">
-                Enable Notifications
-              </button>
-            </div>
-          </div>
-          <!-- Stats Cards -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div onclick="showAllInvestments()"
-              class="stat-card rounded-xl p-4 text-white shadow cursor-pointer hover:opacity-90 transition-opacity mb-3">
-              <div class="text-sm opacity-80 mb-1">
-                Total Monthly Cost
-              </div>
-              <div id="stat-invested" class="text-2xl font-bold">
-                ₹0
-              </div>
-              <div class="text-xs opacity-70 mt-1">Materials + Wages + Expenses</div>
-            </div>
-            <div class="stat-card rounded-xl p-4 text-white shadow mb-3">
-              <div class="text-sm opacity-80 mb-1">
-                Total Revenue
-              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
               <div id="stat-revenue" class="text-2xl font-bold">
                 ₹0
               </div>
@@ -8407,4 +8295,119 @@
   </script>
   <script src="/cloudflare-challenge.js"></script>
 </body>
+</body>
+<script>
+// --- Personal Expenses Modal Logic (DB Integrated) ---
+let editingPersonalExpenseId = null;
+let personalExpenses = [];
+async function loadPersonalExpenses() {
+  try {
+    const res = await api.getData('personal_expense');
+    personalExpenses = (res.data || []).map(e => ({
+      id: e._id,
+      name: e.name,
+      amount: e.amount,
+      dueDate: e.dueDate,
+      include: e.include,
+      settled: e.settled
+    }));
+    renderPersonalExpenses();
+  } catch (e) { showToast('Failed to load personal expenses', 'error'); }
+}
+function openPersonalExpenseModal(id = null) {
+  const modal = document.getElementById('personal-expense-modal');
+  const form = document.getElementById('personal-expense-form');
+  document.getElementById('personal-expense-modal-title').textContent = id ? 'Edit Personal Expense' : 'Add Personal Expense';
+  if (id) {
+    const exp = personalExpenses.find(e => e.id === id);
+    if (exp) {
+      document.getElementById('personal-expense-name').value = exp.name;
+      document.getElementById('personal-expense-amount').value = exp.amount;
+      document.getElementById('personal-expense-due').value = exp.dueDate || '';
+      document.getElementById('personal-expense-include').checked = !!exp.include;
+      document.getElementById('personal-expense-settled').checked = !!exp.settled;
+      editingPersonalExpenseId = id;
+    }
+  } else {
+    form.reset();
+    document.getElementById('personal-expense-include').checked = true;
+    document.getElementById('personal-expense-settled').checked = false;
+    editingPersonalExpenseId = null;
+  }
+  modal.classList.remove('hidden');
+}
+function closePersonalExpenseModal() {
+  document.getElementById('personal-expense-modal').classList.add('hidden');
+  editingPersonalExpenseId = null;
+}
+document.getElementById('personal-expense-form').onsubmit = async function(e) {
+  e.preventDefault();
+  const name = document.getElementById('personal-expense-name').value.trim();
+  const amount = parseFloat(document.getElementById('personal-expense-amount').value);
+  const dueDate = document.getElementById('personal-expense-due').value;
+  const include = document.getElementById('personal-expense-include').checked;
+  const settled = document.getElementById('personal-expense-settled').checked;
+  if (!name || isNaN(amount)) return;
+  try {
+    if (editingPersonalExpenseId) {
+      await api.updateRecord(editingPersonalExpenseId, { type: 'personal_expense', name, amount, dueDate, include, settled });
+    } else {
+      await api.createRecord({ type: 'personal_expense', name, amount, dueDate, include, settled });
+    }
+    await loadPersonalExpenses();
+    closePersonalExpenseModal();
+  } catch (err) { showToast('Failed to save personal expense', 'error'); }
+};
+function renderPersonalExpenses() {
+  const tbody = document.getElementById('personal-expenses-table');
+  if (!personalExpenses.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">No personal expenses yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = personalExpenses.map(exp => `
+    <tr>
+      <td class="px-4 py-2">${escapeHtml(exp.name)}</td>
+      <td class="px-4 py-2">₹${exp.amount.toLocaleString()}</td>
+      <td class="px-4 py-2">${exp.dueDate ? formatDate(exp.dueDate) : '-'}</td>
+      <td class="px-4 py-2 text-center">
+        <button onclick="togglePersonalExpenseInclude('${exp.id}')" class="rounded px-2 py-1 ${exp.include ? 'bg-green-200 text-green-800' : 'bg-slate-200 text-slate-500'}">${exp.include ? 'Included' : 'Not Included'}</button>
+      </td>
+      <td class="px-4 py-2 text-center">
+        <button onclick="togglePersonalExpenseSettled('${exp.id}')" class="rounded px-2 py-1 ${exp.settled ? 'bg-blue-200 text-blue-800' : 'bg-slate-200 text-slate-500'}">${exp.settled ? 'Settled' : 'Unsettled'}</button>
+      </td>
+      <td class="px-4 py-2 text-center">
+        <button onclick="openPersonalExpenseModal('${exp.id}')" class="text-blue-600 hover:underline mr-2">Edit</button>
+        <button onclick="deletePersonalExpense('${exp.id}')" class="text-red-600 hover:underline">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+async function togglePersonalExpenseInclude(id) {
+  const exp = personalExpenses.find(e => e.id === id);
+  if (exp) {
+    try {
+      await api.updateRecord(id, { ...exp, include: !exp.include, type: 'personal_expense' });
+      await loadPersonalExpenses();
+    } catch (err) { showToast('Failed to update', 'error'); }
+  }
+}
+async function togglePersonalExpenseSettled(id) {
+  const exp = personalExpenses.find(e => e.id === id);
+  if (exp) {
+    try {
+      await api.updateRecord(id, { ...exp, settled: !exp.settled, type: 'personal_expense' });
+      await loadPersonalExpenses();
+    } catch (err) { showToast('Failed to update', 'error'); }
+  }
+}
+async function deletePersonalExpense(id) {
+  try {
+    await api.deleteRecord(id);
+    await loadPersonalExpenses();
+  } catch (err) { showToast('Failed to delete', 'error'); }
+}
+// Initial load
+loadPersonalExpenses();
+</script>
+</script>
 </html>
