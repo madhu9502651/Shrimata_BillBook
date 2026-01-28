@@ -13,6 +13,10 @@ class SecureAPI {
   constructor() {
     this.baseURL = '/api';
     this.token = null;
+    this.refreshUser();
+  }
+
+  refreshUser() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
   }
 
@@ -47,11 +51,13 @@ class SecureAPI {
 
   // Check if user is admin
   isAdmin() {
+    this.refreshUser();
     return this.user.role === 'admin';
   }
 
   // Check if user is regular user
   isUser() {
+    this.refreshUser();
     return this.user.role === 'user';
   }
 
@@ -62,7 +68,9 @@ class SecureAPI {
     if (typeof localStorage !== 'undefined') localStorage.clear();
     if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
     // Optionally clear cookies here if used for auth
-    window.location.href = '/login.html';
+    // Force hard reload to fix iPhone/Safari cache issues
+    window.location.replace('/login.html?t=' + Date.now());
+    setTimeout(function() { location.reload(true); }, 100);
   }
 
   // Get all data
