@@ -2,72 +2,14 @@
 <html lang="en" class="h-full">
 
 <head>
-    <script>
-      // Always redirect to login if not authenticated (run as soon as possible)
-      if (!localStorage.getItem('token') || !localStorage.getItem('user')) {
-        window.location.replace('/login.html');
-      }
-    </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Manager Pro - Shrimata BillBook</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-    <script src="/js/api-client.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <!-- Removed problematic cloudflare-challenge.js script reference -->
-    <script>
-    // Utility: Escape HTML to prevent XSS
-    function escapeHtml(str) {
-      if (typeof str !== 'string') return str;
-      return str.replace(/[&<>"'`=\/]/g, function (s) {
-        return ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;',
-          '`': '&#96;',
-          '=': '&#61;',
-          '/': '&#47;'
-        })[s];
-      });
-    }
-    // Utility: Format date as DD MMM YYYY (e.g., 28 Jan 2026)
-    function formatDate(dateStr) {
-      if (!dateStr) return '';
-      const d = new Date(dateStr);
-      if (isNaN(d)) return dateStr;
-      return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
-    }
-
-    // Utility: Show toast notification
-    function showToast(message, type = 'info', duration = 3000) {
-      // Remove any existing toast
-      const old = document.getElementById('global-toast');
-      if (old) old.remove();
-      // Create toast
-      const toast = document.createElement('div');
-      toast.id = 'global-toast';
-      toast.textContent = message;
-      toast.style.position = 'fixed';
-      toast.style.bottom = '32px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.background = type === 'error' ? '#dc2626' : (type === 'success' ? '#059669' : '#334155');
-      toast.style.color = '#fff';
-      toast.style.padding = '12px 24px';
-      toast.style.borderRadius = '8px';
-      toast.style.fontSize = '1rem';
-      toast.style.zIndex = 9999;
-      toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.remove(); }, duration);
-    }
-    </script>
+  <!-- Secure API Client -->
+  <script src="/js/api-client.js"></script>
   <script>
-    // Ensure global api instance
-    window.api = window.api || new SecureAPI();
     // Secure data SDK that uses backend API
     (function () {
       let dataHandlerRef = null;
@@ -87,7 +29,15 @@
           }
         } catch (error) {
           console.error('Failed to load data:', error);
-          alert('Failed to load data: ' + error.message);
+          alert('Data load error: ' + (error.message || error));
+          if (window._sessionExpiredHandled) return;
+          if (error.message && error.message.includes('did not match the expected pattern')) {
+            if (!window._dataPatternErrorHandled) {
+              window._dataPatternErrorHandled = true;
+              alert('Failed to load data: ' + error.message + '\nPlease check your login or contact support.');
+            }
+            return;
+          }
           alert('Failed to load data: ' + error.message);
         }
       }
@@ -368,68 +318,14 @@
 </head>
 <body class="h-full min-h-screen w-full flex items-center justify-center bg-slate-100 text-slate-800" style="min-height: 100vh;">
   <!-- Reference Screenshot for Developers: <img src='/IMG_7938.png' alt='Mobile Dashboard Reference' style='max-width: 100%; display: none;' /> -->
-  <div id="app" class="flex flex-col bg-white w-full max-w-[420px] min-h-screen h-full shadow-lg overflow-hidden" style="height: 100vh;">
-    <script>
-      // Set user info in header and restrict tabs for 'user' role
-      document.addEventListener('DOMContentLoaded', function() {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const userNameEl = document.getElementById('user-name');
-        if (userNameEl) userNameEl.textContent = user.fullName || user.username || 'User';
-        const badge = document.getElementById('user-role-badge');
-        if (user.role === 'user' && badge) {
-          badge.textContent = 'USER';
-          badge.classList.remove('bg-purple-600');
-          badge.classList.add('bg-blue-600');
-          // Hide all tabs except Production
-          const allowed = ['tab-workers'];
-          document.querySelectorAll('.tab-btn').forEach(btn => {
-            if (!allowed.includes(btn.id)) {
-              btn.style.display = 'none';
-            } else {
-              btn.style.display = '';
-            }
-          });
-          // Show only production tab content
-          document.querySelectorAll('.tab-content').forEach(tc => {
-            if (tc.id !== 'content-workers') tc.style.display = 'none';
-            else tc.style.display = '';
-          });
-          // Set production tab as active
-          const tabWorkers = document.getElementById('tab-workers');
-          if (tabWorkers) tabWorkers.classList.add('tab-active');
-        }
-
-        // User menu toggle logic
-        const userMenuBtn = document.getElementById('user-menu-btn');
-        const userMenu = document.getElementById('user-menu');
-        if (userMenuBtn && userMenu) {
-          userMenuBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            userMenu.classList.toggle('hidden');
-          });
-          // Hide menu when clicking outside
-          document.addEventListener('click', function(e) {
-            if (!userMenu.contains(e.target) && e.target !== userMenuBtn) {
-              userMenu.classList.add('hidden');
-            }
-          });
-        }
-      });
-    </script>
+  <div id="app" class="flex flex-col bg-white w-full max-w-[420px] min-h-screen h-full shadow-lg overflow-hidden" style="height: 100vh;"><!-- Header with Pending Collection Alert -->
     <header class="bg-white shadow-sm border-b border-slate-200 px-4 py-3 flex-shrink-0">
       <div class="w-full flex flex-col items-center gap-2 pt-2 pb-2">
         <h1 id="app-title" class="text-xl font-bold text-slate-800 w-full text-center tracking-tight leading-tight mb-2">Shrimata Business Manager Pro</h1>
         <div class="w-full flex flex-row flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-2 rounded-lg border border-purple-200 flex-1 min-w-0 relative">
-            <button id="user-menu-btn" class="text-base align-middle font-medium text-slate-700 truncate flex items-center gap-1 focus:outline-none" style="background: none; border: none; cursor: pointer;">
-              👤 <span id="user-name">User</span>
-              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </button>
+          <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-2 rounded-lg border border-purple-200 flex-1 min-w-0">
+            <span class="text-base align-middle font-medium text-slate-700 truncate">👤 <span id="user-name">User</span></span>
             <span id="user-role-badge" class="text-xs px-2 py-1 rounded-full bg-purple-600 text-white font-semibold">ADMIN</span>
-            <div id="user-menu" class="absolute right-0 top-12 bg-white border border-slate-200 rounded shadow-lg z-50 hidden min-w-[160px]">
-              <button id="change-password-btn" class="block w-full text-left px-4 py-2 hover:bg-slate-100 text-slate-700">Change Password</button>
-              <button id="logout-btn" class="block w-full text-left px-4 py-2 hover:bg-slate-100 text-red-600">Logout</button>
-            </div>
           </div>
           <div class="flex gap-2 flex-shrink-0 mt-2">
             <button onclick="showAlerts()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors" title="View Alerts">
@@ -494,11 +390,6 @@
           <span aria-label="Expenses" title="Expenses" class="text-base align-middle">💰</span>
           <span class="text-[10px] mt-1 text-slate-500 font-medium">Expenses</span>
         </button>
-        <button onclick="switchTab('personal')" id="tab-personal"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
-          <span aria-label="Personal" title="Personal" class="text-base align-middle">🧾</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Personal</span>
-        </button>
           <button onclick="switchTab('products')" id="tab-products"
           class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
           <span aria-label="Products" title="Products" class="text-base align-middle">📦</span>
@@ -508,117 +399,43 @@
     </nav><!-- Main Content -->
     <main class="flex-1 overflow-auto p-4 scrollbar-thin">
       <div class="w-full flex flex-col gap-3 pb-32 px-2 pt-2"><!-- Dashboard Tab, pb-32 for nav/action bar space -->
-              <!-- Personal Expenses Tab -->
-              <div id="content-personal" class="tab-content hidden animate-fade-in">
-                      <!-- Personal Expense Modal -->
-                      <div id="personal-expense-modal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-                        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md animate-fade-in my-8">
-                          <form id="personal-expense-form" class="p-6 space-y-4">
-                            <h3 class="text-lg font-bold mb-2" id="personal-expense-modal-title">Add Personal Expense</h3>
-                            <div>
-                              <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
-                              <input type="text" id="personal-expense-name" class="input-field w-full border px-3 py-2 rounded-lg" required />
-                            </div>
-                            <div>
-                              <label class="block text-sm font-medium text-slate-700 mb-1">Amount</label>
-                              <input type="number" id="personal-expense-amount" class="input-field w-full border px-3 py-2 rounded-lg" min="0" step="0.01" required />
-                            </div>
-                            <div>
-                              <label class="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
-                              <input type="date" id="personal-expense-due" class="input-field w-full border px-3 py-2 rounded-lg" />
-                            </div>
-                            <div class="flex items-center gap-4">
-                              <label class="flex items-center gap-2">
-                                <input type="checkbox" id="personal-expense-include" class="form-checkbox" checked />
-                                <span class="text-sm">Include in Expenses</span>
-                              </label>
-                              <label class="flex items-center gap-2">
-                                <input type="checkbox" id="personal-expense-settled" class="form-checkbox" />
-                                <span class="text-sm">Settled</span>
-                              </label>
-                            </div>
-                            <div class="flex justify-end gap-2 mt-4">
-                              <button type="button" onclick="closePersonalExpenseModal()" class="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium">Cancel</button>
-                              <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Save</button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                // --- Personal Expenses Modal Logic (DB Integrated) ---
-                let editingPersonalExpenseId = null;
-                let personalExpenses = [];
-
-                async function loadPersonalExpenses() {
-                  try {
-                    const res = await api.getData('personal_expense');
-                    personalExpenses = (res.data || []).map(e => ({
-                      id: e._id,
-                      name: e.name,
-                      amount: e.amount,
-                      dueDate: e.dueDate,
-                      include: e.include,
-                      settled: e.settled
-                    }));
-                    renderPersonalExpenses();
-                  } catch (e) {
-                    showToast('Failed to load personal expenses', 'error');
-                  }
-                }
-
-                function openPersonalExpenseModal(id = null) {
-                  const modal = document.getElementById('personal-expense-modal');
-                  const form = document.getElementById('personal-expense-form');
-                  document.getElementById('personal-expense-modal-title').textContent = id ? 'Edit Personal Expense' : 'Add Personal Expense';
-                  if (id) {
-                    const exp = personalExpenses.find(e => e.id === id);
-                    if (exp) {
-                      document.getElementById('personal-expense-name').value = exp.name;
-                      document.getElementById('personal-expense-amount').value = exp.amount;
-                      document.getElementById('personal-expense-due').value = exp.dueDate || '';
-                      document.getElementById('personal-expense-include').checked = !!exp.include;
-                      document.getElementById('personal-expense-settled').checked = !!exp.settled;
-                      editingPersonalExpenseId = id;
-                    }
-                  } else {
-                    form.reset();
-                    document.getElementById('personal-expense-include').checked = true;
-                    document.getElementById('personal-expense-settled').checked = false;
-                    editingPersonalExpenseId = null;
-                  }
-                  modal.classList.remove('hidden');
-                }
-
-                function closePersonalExpenseModal() {
-                  document.getElementById('personal-expense-modal').classList.add('hidden');
-                  editingPersonalExpenseId = null;
-                }
-
-                document.getElementById('personal-expense-form').onsubmit = async function(e) {
-                  e.preventDefault();
-                  const name = document.getElementById('personal-expense-name').value.trim();
-                  const amount = parseFloat(document.getElementById('personal-expense-amount').value);
-                  const dueDate = document.getElementById('personal-expense-due').value;
-                  const include = document.getElementById('personal-expense-include').checked;
-                  const settled = document.getElementById('personal-expense-settled').checked;
-                  if (!name || isNaN(amount)) return;
-                  try {
-                    if (editingPersonalExpenseId) {
-                      // Edit
-                      await api.updateRecord(editingPersonalExpenseId, { type: 'personal_expense', name, amount, dueDate, include, settled });
-                    } else {
-                      // Add
-                      await api.createRecord({ type: 'personal_expense', name, amount, dueDate, include, settled });
-                    }
-                    await loadPersonalExpenses();
-                    closePersonalExpenseModal();
-                  } catch (err) {
-                    showToast('Failed to save personal expense', 'error');
-                  }
-                };
-                            </div>
-                          </form>
-                        </div>
-                      </div>
+        <div id="content-dashboard" class="tab-content animate-fade-in">
+          <!-- Notification Permission Banner -->
+          <div id="notification-banner" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 hidden">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <div>
+                  <div class="font-semibold text-blue-900">Enable Daily Reminders</div>
+                  <div class="text-sm text-blue-700">Get notified at 10 AM for attendance and 7 PM for production</div>
+                </div>
+              </div>
+              <button onclick="enableNotifications()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap">
+                Enable Notifications
+              </button>
+            </div>
+          </div>
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div onclick="showAllInvestments()"
+              class="stat-card rounded-xl p-4 text-white shadow cursor-pointer hover:opacity-90 transition-opacity mb-3">
+              <div class="text-sm opacity-80 mb-1">
+                Total Monthly Cost
+              </div>
+              <div id="stat-invested" class="text-2xl font-bold">
+                ₹0
+              </div>
+              <div class="text-xs opacity-70 mt-1">Materials + Wages + Expenses</div>
+            </div>
+            <div class="stat-card rounded-xl p-4 text-white shadow mb-3">
+              <div class="text-sm opacity-80 mb-1">
+                Total Revenue
+              </div>
+>>>>>>> 79d1d8e (Fix: Remove duplicate v ariable declarations in renderWorkers)
               <div id="stat-revenue" class="text-2xl font-bold">
                 ₹0
               </div>
@@ -1250,7 +1067,7 @@
           </div>
         </div>
         <div id="receipt-content" class="p-8 bg-white relative overflow-y-auto flex-1"
-          style="min-height: 400px; max-width: 800px; margin: 0 auto; width: 794px;">
+          style="min-height: 400px; max-width: 800px; margin: 0 auto; width: 100%;">
           <!-- Receipt will be generated here -->
         </div>
       </div>
@@ -1341,8 +1158,6 @@
         renderAll();
       }
     };
-    // Ensure polling and SDK use the same handler
-    window.dataHandler = dataHandler;
 
     // Migration: Add default units to orders without quantity_unit
     async function migrateOrderUnits() {
@@ -1441,8 +1256,56 @@
     }
 
     async function updateWorkerMonthlySalary(worker, month) {
-      // TODO: Implement salary calculation and wage record creation for worker
-      // This function was previously corrupted by misplaced code. Add your logic here.
+      // Calculate salary based on attendance
+      const attendanceRecords = getAttendance();
+      const monthRecords = attendanceRecords.filter(a =>
+        a.worker_id === worker.__backendId &&
+        a.date &&
+        a.date.startsWith(month)
+      );
+
+      const presentCount = monthRecords.filter(r => r.status === 'present').length;
+      const halfDayCount = monthRecords.filter(r => r.status === 'half-day').length;
+      const absentCount = monthRecords.filter(r => r.status === 'absent').length;
+      const totalDaysTracked = presentCount + halfDayCount + absentCount;
+
+      // Calculate actual salary for days tracked so far
+      const calculatedSalary = calculateMonthlySalary(worker, presentCount, halfDayCount, absentCount, month);
+
+      // Find existing wage entry for this month
+      const households = allData.filter(d => d.type === 'household' && d.category === 'Worker Wages');
+      const existingWage = households.find(h =>
+        h.date && h.date.substring(0, 7) === month &&
+        h.description && h.description.includes(worker.name)
+      );
+
+      const description = `Monthly Salary - ${worker.name} (${totalDaysTracked} days: P:${presentCount} H:${halfDayCount} A:${absentCount})`;
+
+      if (existingWage) {
+        // Update existing wage entry
+        const updated = {
+          ...existingWage,
+          cost: calculatedSalary,
+          description: description,
+          updated_at: new Date().toISOString()
+        };
+        await window.dataSdk.update(updated);
+        console.log(`✅ Updated salary for ${worker.name}: ₹${calculatedSalary}`);
+      } else {
+        // Create new wage entry
+        const wageRecord = {
+          type: 'household',
+          category: 'Worker Wages',
+          description: description,
+          cost: calculatedSalary,
+          date: `${month}-01`,
+          place: 'Salary Payment',
+          worker_id: worker.__backendId,
+          created_at: new Date().toISOString()
+        };
+        await window.dataSdk.create(wageRecord);
+        console.log(`✅ Created salary entry for ${worker.name}: ₹${calculatedSalary}`);
+      }
     }
 
     // Initialize SDKs
@@ -1526,7 +1389,6 @@
       showLoading(false);
     }
 
-    
     function populateMonthSelector() {
       const selector = document.getElementById('month-selector');
       const today = new Date();
@@ -2116,22 +1978,22 @@
       }
     }
     function renderAll() {
-      if (typeof renderStats === 'function') renderStats();
-      if (typeof renderInvestments === 'function') renderInvestments();
-      if (typeof renderSales === 'function') renderSales();
-      if (typeof renderProducts === 'function') renderProducts();
-      if (typeof renderOrders === 'function') renderOrders();
-      if (typeof renderRolls === 'function') renderRolls();
-      if (typeof renderAttendanceWorkers === 'function') renderAttendanceWorkers();
-      if (typeof renderAttendanceForDate === 'function') renderAttendanceForDate(); // Also render daily attendance grid
-      if (typeof renderPendingOrdersCard === 'function') renderPendingOrdersCard();
-      if (typeof renderProduction === 'function') renderProduction();
-      if (typeof renderWorkers === 'function') renderWorkers();
-      if (typeof renderProductionTargets === 'function') renderProductionTargets();
-      if (typeof renderPricingRecommendations === 'function') renderPricingRecommendations();
-      if (typeof renderMonthlyBreakdown === 'function') renderMonthlyBreakdown();
-      if (typeof renderProductAnalysisDropdown === 'function') renderProductAnalysisDropdown();
-      if (typeof updateAlerts === 'function') updateAlerts();
+      renderStats();
+      renderInvestments();
+      renderSales();
+      renderProducts();
+      renderOrders();
+      renderRolls();
+      renderAttendanceWorkers();
+      renderAttendanceForDate(); // Also render daily attendance grid
+      renderPendingOrdersCard();
+      renderProduction();
+      renderWorkers();
+      renderProductionTargets();
+      renderPricingRecommendations();
+      renderMonthlyBreakdown();
+      renderProductAnalysisDropdown();
+      updateAlerts();
     }
 
     function renderStats() {
@@ -2592,7 +2454,7 @@
                 <div class="font-semibold text-base truncate">${escapeHtml(customer)} ${allSettled ? '<span class=\"text-xs text-green-600 font-normal\">✓ Settled</span>' : ''}</div>
                 <div class="text-xs text-slate-500 mt-0.5">${totalOrders} ${totalOrders === 1 ? 'order' : 'orders'} • ${allPayments.length} ${allPayments.length === 1 ? 'payment' : 'payments'}</div>
               </div>
-              <button onclick="shareReceipt('${customer.replace(/'/g, "\\'")}'); event.stopPropagation();" class="ml-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" title="Share Receipt">
+              <button onclick="(function(e){e.stopPropagation();shareReceipt('${customer.replace(/'/g, "\\'")}");})(event);" class="ml-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" title="Share Receipt">
                 <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                 </svg>
@@ -2766,7 +2628,7 @@
         return;
       }
 
-      // If only one order, just show the receipt modal for that order
+      // If only one order, show receipt for that order
       if (customerOrders.length === 1) {
         showOrderReceipt(customerOrders[0].__backendId);
         return;
@@ -2957,218 +2819,71 @@
         return;
       }
 
-
       const receiptContent = document.getElementById('receipt-content');
       if (!receiptContent) return;
 
       showToast('Generating image...', 'info');
 
-
-      // Save original styles for modal and content
-      const modal = document.getElementById('receipt-modal');
-      const originalModalPosition = modal.style.position;
-      const originalModalWidth = modal.style.width;
-      const originalModalHeight = modal.style.height;
-      const originalModalDisplay = modal.style.display;
-      const originalModalFlex = modal.style.flexDirection;
-      const originalModalAlign = modal.style.alignItems;
-      const originalModalJustify = modal.style.justifyContent;
-      const originalContentOverflow = receiptContent.style.overflow;
-      const originalContentHeight = receiptContent.style.height;
-      const originalContentMaxHeight = receiptContent.style.maxHeight;
-      const originalContentBoxShadow = receiptContent.style.boxShadow;
-      const originalContentWidth = receiptContent.style.width;
-      const originalContentDisplay = receiptContent.style.display;
-
-
-
-      // Remove flex, height, minHeight, maxHeight, and overflow from all parents up to modal
-      const parents = [];
-      let el = receiptContent;
-      while (el && el !== modal.parentElement && el !== document.body) {
-        parents.push(el);
-        el = el.parentElement;
-      }
-      // Save original styles
-      const originalParentStyles = parents.map(p => ({
-        element: p,
-        style: {
-          display: p.style.display,
-          flex: p.style.flex,
-          flexDirection: p.style.flexDirection,
-          alignItems: p.style.alignItems,
-          justifyContent: p.style.justifyContent,
-          height: p.style.height,
-          minHeight: p.style.minHeight,
-          maxHeight: p.style.maxHeight,
-          overflow: p.style.overflow,
-        }
-      }));
-      // Remove constraints
-      parents.forEach(p => {
-        p.style.display = 'block';
-        p.style.flex = 'none';
-        p.style.flexDirection = 'initial';
-        p.style.alignItems = 'initial';
-        p.style.justifyContent = 'initial';
-        p.style.height = 'auto';
-        p.style.minHeight = '0';
-        p.style.maxHeight = 'none';
-        p.style.overflow = 'visible';
-      });
-      receiptContent.style.height = receiptContent.scrollHeight + 'px'; // Force full height
-
-      // Wait for all images to load
-      const images = receiptContent.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => { img.onload = img.onerror = resolve; });
-      }));
-
-
-      // Wait a moment for layout
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       try {
+        // Temporarily hide the watermark to avoid CORS issues
+        const style = document.createElement('style');
+        style.id = 'temp-hide-watermark';
+        style.textContent = '#receipt-content::before { display: none !important; }';
+        document.head.appendChild(style);
 
-        // Capture the receipt as canvas with A4 width and moderate scale
+        // Find and temporarily hide the logo image
+        const logoImg = receiptContent.querySelector('img[alt="Shri Mata Logo"]');
+        const originalDisplay = logoImg ? logoImg.style.display : null;
+        if (logoImg) logoImg.style.display = 'none';
+
+        // Wait a moment
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Capture the receipt as canvas
         const canvas = await html2canvas(receiptContent, {
           backgroundColor: '#ffffff',
-          scale: 2, // Good clarity, not excessive size
+          scale: 2,
           logging: false,
           allowTaint: true,
           useCORS: false
         });
 
-        // Restore styles
-        modal.style.position = originalModalPosition;
-        modal.style.width = originalModalWidth;
-        modal.style.height = originalModalHeight;
-        modal.style.display = originalModalDisplay;
-        modal.style.flexDirection = originalModalFlex;
-        modal.style.alignItems = originalModalAlign;
-        modal.style.justifyContent = originalModalJustify;
-        receiptContent.style.overflow = originalContentOverflow;
-        receiptContent.style.height = originalContentHeight;
-        receiptContent.style.maxHeight = originalContentMaxHeight;
-        receiptContent.style.boxShadow = originalContentBoxShadow;
-        receiptContent.style.width = originalContentWidth;
-        receiptContent.style.display = originalContentDisplay;
-        // Restore all parent styles
-        originalParentStyles.forEach(({element, style}) => {
-          element.style.display = style.display;
-          element.style.flex = style.flex;
-          element.style.flexDirection = style.flexDirection;
-          element.style.alignItems = style.alignItems;
-          element.style.justifyContent = style.justifyContent;
-          element.style.height = style.height;
-          element.style.minHeight = style.minHeight;
-          element.style.maxHeight = style.maxHeight;
-          element.style.overflow = style.overflow;
-        });
-        // No watermark hiding needed; watermark will be visible in the image
+        // Restore the logo and watermark
+        if (logoImg && originalDisplay !== null) logoImg.style.display = originalDisplay;
+        const tempStyle = document.getElementById('temp-hide-watermark');
+        if (tempStyle) tempStyle.remove();
 
-        // Convert canvas to base64 PNG and Blob
-        const pngData = canvas.toDataURL('image/png');
-        const fileName = `receipt-${order.customer_name || 'order'}.png`;
+        // Convert canvas to blob
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast('Failed to generate image', 'error');
+            return;
+          }
 
-        // Try to use Web Share API for image sharing (mobile)
-        let shared = false;
-        if (navigator.canShare && window.File && typeof navigator.share === 'function') {
-          try {
-            // Convert base64 to Blob
-            const res = await fetch(pngData);
-            const blob = await res.blob();
-            const file = new File([blob], fileName, { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
+          const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
               await navigator.share({
+                files: [file],
                 title: `Receipt - ${order.customer_name}`,
-                text: 'Order receipt from Shri Mata',
-                files: [file]
+                text: `Order receipt for ${order.customer_name}`
               });
-              showToast('Receipt shared!', 'success');
-              shared = true;
-              return;
-            }
-          } catch (error) {
-            if (error.name !== 'AbortError') {
-              showToast('Failed to share via app. Uploading to server...', 'warning');
-            } else {
-              return;
-            }
-          }
-        }
-        if (!shared && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Fallback: copy receipt text to clipboard
-          let receiptText = '';
-          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `   SHRI MATA\n`;
-          receiptText += `   Eco-Friendly Bliss\n`;
-          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `   ORDER RECEIPT\n`;
-          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-          receiptText += `Customer: ${order.customer_name || 'N/A'}\n`;
-          receiptText += `Order Date: ${formatDate(order.issue_date) || 'N/A'}\n`;
-          receiptText += `Delivery Date: ${formatDate(order.delivery_date) || 'N/A'}\n`;
-          receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `ITEMS\n`;
-          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `Product: ${order.product_name || 'N/A'}\n`;
-          if (order.length && order.width) {
-            receiptText += `Size: ${order.length}×${order.width}${order.dimension_unit || 'cm'}\n`;
-          }
-          if (order.quantity) {
-            receiptText += `Quantity: ${order.quantity}\n`;
-          }
-          receiptText += `Price: ${getCurrency()}${(order.price || 0).toLocaleString()}\n`;
-          if (order.payment_history && order.payment_history.length > 0) {
-            receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-            receiptText += `PAYMENT HISTORY\n`;
-            receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-            order.payment_history.forEach((payment, idx) => {
-              receiptText += `${idx + 1}. ${getCurrency()}${(payment.amount || 0).toLocaleString()}`;
-              receiptText += ` - ${formatDate(payment.date)}`;
-              if (payment.time) receiptText += ` at ${payment.time}`;
-              if (payment.mode) {
-                const modes = { cash: '💵 Cash', phonepay: '📱 PhonePe', gpay: '💳 GPay', paytm: '💰 Paytm' };
-                receiptText += ` (${modes[payment.mode] || '🏦 Bank'})`;
+              showToast('Receipt shared successfully!', 'success');
+            } catch (error) {
+              if (error.name !== 'AbortError') {
+                // Fallback: download the image
+                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
               }
-              if (payment.note) receiptText += ` - ${payment.note}`;
-              receiptText += `\n`;
-            });
-          }
-          receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `SUMMARY\n`;
-          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `Total Price: ${getCurrency()}${(order.price || 0).toLocaleString()}\n`;
-          receiptText += `Amount Paid: ${getCurrency()}${(order.amount_paid || 0).toLocaleString()}\n`;
-          const balance = (order.balance !== undefined) ? order.balance : (order.price - (order.amount_paid || 0));
-          receiptText += `Remaining: ${getCurrency()}${balance.toLocaleString()}\n`;
-          if (order.promised_payment_date && balance > 0) {
-            receiptText += `\n🗓️ To be collected by: ${formatDate(order.promised_payment_date)}\n`;
-          }
-          receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          receiptText += `For queries contact:\n`;
-          receiptText += `Shri Mata +918328501239\n`;
-          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-          copyToClipboard(receiptText);
-          showToast('Sharing to WhatsApp or other apps is not supported on this device/browser. Receipt text copied to clipboard. You can paste it in WhatsApp or any app.', 'info');
-        }
-        // Fallback: upload to server as before
-        try {
-          const result = await api.createShareReceipt({ pngData, fileName });
-          if (result.success) {
-            showToast('Receipt shared to server!', 'success');
+            }
           } else {
-            showToast('Failed to share receipt: ' + (result.message || 'Unknown error'), 'error');
+            // Fallback: download the image
+            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
           }
-        } catch (error) {
-          console.error('API error:', error);
-          showToast('Failed to share receipt. Error: ' + error.message, 'error');
-        }
+        }, 'image/png');
       } catch (error) {
-        console.error('Error capturing or sharing receipt:', error);
-        showToast('Failed to share receipt. Error: ' + error.message, 'error');
+        console.error('Error capturing receipt:', error);
+        showToast('Failed to generate image. Error: ' + error.message, 'error');
       }
     }
 
@@ -4142,19 +3857,9 @@
         const worker = data.worker;
         const workerId = worker.__backendId;
 
-        // Only count the last status per day for each worker
-        const recordsByDate = {};
-        data.records.forEach(r => {
-          recordsByDate[r.date] = r; // Overwrite, so last record for date remains
-        });
-        const lastRecords = Object.values(recordsByDate);
-        const presentCount = lastRecords.filter(r => r.status === 'present').length;
-        const halfDayCount = lastRecords.filter(r => r.status === 'half-day').length;
-        const absentCount = lastRecords.filter(r => r.status === 'absent').length;
-
         // Get the month from records for salary calculation
-        const month = lastRecords.length > 0 && lastRecords[0].date
-          ? lastRecords[0].date.substring(0, 7)
+        const month = data.records.length > 0 && data.records[0].date
+          ? data.records[0].date.substring(0, 7)
           : new Date().toISOString().substring(0, 7);
 
         // Build calendar view if dateRange is provided
@@ -4164,7 +3869,7 @@
             <div class="border-t border-slate-200 pt-3 mt-3">
               <div class="grid grid-cols-7 gap-1">
                 ${dateRange.dates.map(dateStr => {
-            const record = lastRecords.find(r => r.date === dateStr);
+            const record = data.records.find(r => r.date === dateStr);
             const status = record?.status;
             const date = new Date(dateStr);
             const day = date.getDate();
@@ -4478,12 +4183,7 @@
     async function markAttendance(workerId, date, status) {
       try {
         const attendanceRecords = getAttendance();
-        // Remove all other attendance records for this worker and date except the one being updated/created
-        let existingRecord = attendanceRecords.find(a => a.worker_id === workerId && a.date === date);
-        const duplicates = attendanceRecords.filter(a => a.worker_id === workerId && a.date === date && a !== existingRecord);
-        for (const dup of duplicates) {
-          if (dup.__backendId) await window.dataSdk.delete(dup.__backendId);
-        }
+        const existingRecord = attendanceRecords.find(a => a.worker_id === workerId && a.date === date);
         const oldStatus = existingRecord?.status;
 
         // Get worker name to store in attendance record
@@ -4494,11 +4194,6 @@
           'Unknown Worker';
 
         if (existingRecord) {
-          // If status is unchanged, do nothing
-          if (existingRecord.status === status) {
-            showToast('Attendance already marked as ' + status, 'info');
-            return;
-          }
           // Update existing - preserve the worker name if it exists
           const result = await window.dataSdk.update({
             ...existingRecord,
@@ -4764,7 +4459,7 @@
         return;
       }
 
-      // Group workers by date (legacy, not used below)
+      // Group workers by date
       const workersByDate = {};
       workers.forEach(worker => {
         const date = worker.date || 'No Date';
@@ -4774,142 +4469,125 @@
         workersByDate[date].push(worker);
       });
 
-      // Prepare container and byWorker for attendance history rendering
-      const container = document.getElementById('attendance-history-container');
-      const byWorker = {};
-      workers.forEach(worker => {
-        if (!byWorker[worker.__backendId]) {
-          byWorker[worker.__backendId] = { worker: worker, isDeleted: false, records: [] };
-        }
-        byWorker[worker.__backendId].records.push(worker);
+      // Sort dates in descending order (newest first)
+      const sortedDates = Object.keys(workersByDate).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        return new Date(b) - new Date(a);
       });
 
-      // Render grouped by worker
-      // Ensure dateRange is defined to avoid ReferenceError
-      const dateRangeSafe = typeof dateRange !== 'undefined' ? dateRange : null;
-      container.innerHTML = Object.values(byWorker).map((data, index) => {
-        const worker = data.worker;
-        const workerId = worker.__backendId;
+      // Render grouped by date
+      tbody.innerHTML = sortedDates.map((date, dateIndex) => {
+        const dateWorkers = workersByDate[date];
+        const dateTotal = dateWorkers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
+        const dateHours = dateWorkers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
 
-        // Calculate attendance counts for this worker
-        const presentCount = data.records.filter(r => r.status === 'present').length;
-        const halfDayCount = data.records.filter(r => r.status === 'half-day').length;
-        const absentCount = data.records.filter(r => r.status === 'absent').length;
-
-        // Get the month from records for salary calculation
-        const month = data.records.length > 0 && data.records[0].date
-          ? data.records[0].date.substring(0, 7)
-          : new Date().toISOString().substring(0, 7);
-
-        // Build calendar view if dateRange is provided
-        let calendarHTML = '';
-        if (dateRangeSafe && dateRangeSafe.dates && dateRangeSafe.dates.length > 0) {
-          calendarHTML = `
-            <div class="border-t border-slate-200 pt-3 mt-3">
-              <div class="grid grid-cols-7 gap-1">
-                ${dateRangeSafe.dates.map(dateStr => {
-            const record = data.records.find(r => r.date === dateStr);
-            const status = record?.status;
-            const date = new Date(dateStr);
-            const day = date.getDate();
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-
-            let bgColor = 'bg-slate-100';
-            let textColor = 'text-slate-400';
-            let badge = '';
-
-            if (status === 'present') {
-              bgColor = 'bg-green-500';
-              textColor = 'text-white';
-              badge = '✓';
-            } else if (status === 'absent') {
-              bgColor = 'bg-red-500';
-              textColor = 'text-white';
-              badge = '✗';
-            } else if (status === 'half-day') {
-              bgColor = 'bg-orange-500';
-              textColor = 'text-white';
-              badge = '◐';
-            }
-
-            return `
-                    <div class="text-center">
-                      <div class="text-xs text-slate-500 mb-1">${dayName}</div>
-                      <div class="${bgColor} ${textColor} rounded-lg p-2 font-bold text-sm">
-                        ${day}
-                        ${badge ? `<div class="text-xs">${badge}</div>` : ''}
-                      </div>
-                    </div>
-                  `;
-          }).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="card-gradient shadow-lg border ${data.isDeleted ? 'border-orange-300' : 'border-slate-200'} rounded-xl overflow-hidden mb-4">
-            <div class="p-4 cursor-pointer hover:opacity-90 transition-opacity" onclick="toggleWorkerHistory('${workerId}')">
-              <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-gradient-to-br ${data.isDeleted ? 'from-orange-400 to-red-500' : 'from-blue-500 to-purple-600'} rounded-full flex items-center justify-center text-white font-bold">
-                    ${escapeHtml(worker?.name || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div class="font-semibold text-lg">${escapeHtml(worker?.name || 'Unknown')}</div>
-                    ${data.isDeleted ? '<div class="text-xs text-orange-600 font-semibold">⚠️ Worker Deleted</div>' : ''}
-                  </div>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="text-sm text-slate-600">
-                    <span class="text-green-600 font-semibold">${presentCount}✓</span> / 
-                    <span class="text-orange-600 font-semibold">${halfDayCount}◐</span> / 
-                    <span class="text-red-600 font-semibold">${absentCount}✗</span>
-                  </div>
-                  <svg id="chevron-${workerId}" class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div id="history-${workerId}" class="hidden" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
-              <div class="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-t border-slate-200">
-                <div class="grid grid-cols-3 gap-3 mb-3">
-                  <div class="bg-white border border-green-200 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs text-green-600 font-medium">Present</div>
-                    <div class="text-xl font-bold text-green-700">${presentCount}</div>
-                  </div>
-                  <div class="bg-white border border-orange-200 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs text-orange-600 font-medium">Half Day</div>
-                    <div class="text-xl font-bold text-orange-700">${halfDayCount}</div>
-                  </div>
-                  <div class="bg-white border border-red-200 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs text-red-600 font-medium">Absent</div>
-                    <div class="text-xl font-bold text-red-700">${absentCount}</div>
-                  </div>
-                </div>
-                ${calendarHTML}
-              </div>
-            </div>
-          </div>
+        const dateHeader = `
+          <tr class="bg-gradient-to-r from-slate-50 to-blue-50 border-t-2 border-slate-300">
+            <td colspan="7" class="px-4 py-3 font-bold text-lg text-slate-700">
+              📅 ${date !== 'No Date' ? formatDate(date) : 'No Date'} 
+              <span class="text-sm font-normal ml-3 text-slate-600">
+                ${dateWorkers.length} worker${dateWorkers.length !== 1 ? 's' : ''} • 
+                ${dateTotal.toLocaleString()} units • 
+                ${dateHours.toFixed(1)}h total
+              </span>
+            </td>
+          </tr>
         `;
+
+        const dateRows = dateWorkers.map(worker => {
+          const productivity = worker.hours_worked > 0 ? (worker.units_produced / worker.hours_worked) : 0;
+          const isLowProductivity = productivity < 5;
+
+          return `
+            <tr class="table-row border-b border-slate-100 ${isLowProductivity ? 'bg-amber-50' : ''}">
+              <td class="px-4 py-3 text-slate-600">${formatDate(worker.date)}</td>
+              <td class="px-4 py-3 font-medium">${escapeHtml(worker.worker_name || '')}</td>
+              <td class="px-4 py-3">
+                ${worker.background_work ?
+              `<span class="text-slate-700">${escapeHtml(worker.background_work)}</span>
+                   <span class="text-xs text-slate-500 block">Background Work</span>`
+              : escapeHtml(worker.product_name || '')}
+              </td>
+              <td class="px-4 py-3 font-semibold text-blue-600">${(worker.units_produced || 0).toLocaleString()} ${escapeHtml(worker.production_unit || 'pcs')}</td>
+              <td class="px-4 py-3 text-slate-600">${worker.hours_worked || 0}h</td>
+              <td class="px-4 py-3 ${isLowProductivity ? 'text-amber-600 font-semibold' : 'text-slate-700'}">${productivity.toFixed(1)} ${isLowProductivity ? '⚠️' : ''}</td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button onclick="editItem('${worker.__backendId}', 'worker')" class="text-blue-600 hover:text-blue-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button onclick="deleteItem('${worker.__backendId}')" class="text-red-600 hover:text-red-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
         }).join('');
 
-      // Calculate required production based on unsettled orders
+        // Add spacing row between dates (except for the last group)
+        const spacingRow = dateIndex < sortedDates.length - 1 ?
+          '<tr class="bg-slate-100"><td colspan="7" class="h-3"></td></tr>' : '';
+
+        return dateHeader + dateRows + spacingRow;
+      }).join('');
+    }
+
+    function renderProductionTargets() {
+      const currency = getCurrency();
+      const orders = getFilteredData(getOrders()).filter(o => !o.settled);
+      const production = getFilteredData(getProduction());
+      const workers = getFilteredData(getWorkers());
+      const container = document.getElementById('production-targets');
+
+      if (orders.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-center py-8">No pending orders to calculate targets.</p>';
+        return;
+      }
+
+      // Group orders by product
       const ordersByProduct = {};
-      const filteredOrders = getFilteredData(getOrders()).filter(o => !o.settled);
-      filteredOrders.forEach(order => {
-        const product = order.product_name;
-        if (!ordersByProduct[product]) {
-          ordersByProduct[product] = {
-            required: 0,
-            earliestDelivery: order.delivery_date || null
-          };
-        }
-        ordersByProduct[product].required += order.quantity || 0;
-        // Track earliest delivery date
-        if (order.delivery_date && (!ordersByProduct[product].earliestDelivery || new Date(order.delivery_date) < new Date(ordersByProduct[product].earliestDelivery))) {
-          ordersByProduct[product].earliestDelivery = order.delivery_date;
+      orders.forEach(order => {
+        // Handle both multi-product and legacy single-product orders
+        if (order.products && order.products.length > 0) {
+          // Multi-product order
+          order.products.forEach(prod => {
+            const product = prod.product_name;
+            if (!product) return; // Skip if no product name
+
+            if (!ordersByProduct[product]) {
+              ordersByProduct[product] = { required: 0, orders: [], earliestDelivery: null };
+            }
+            ordersByProduct[product].required += prod.quantity || 0;
+            ordersByProduct[product].orders.push(order);
+
+            if (order.delivery_date) {
+              if (!ordersByProduct[product].earliestDelivery || order.delivery_date < ordersByProduct[product].earliestDelivery) {
+                ordersByProduct[product].earliestDelivery = order.delivery_date;
+              }
+            }
+          });
+        } else {
+          // Legacy single-product order
+          const product = order.product_name;
+          if (!product) return; // Skip if no product name
+
+          if (!ordersByProduct[product]) {
+            ordersByProduct[product] = { required: 0, orders: [], earliestDelivery: null };
+          }
+          ordersByProduct[product].required += order.quantity || 0;
+          ordersByProduct[product].orders.push(order);
+
+          if (order.delivery_date) {
+            if (!ordersByProduct[product].earliestDelivery || order.delivery_date < ordersByProduct[product].earliestDelivery) {
+              ordersByProduct[product].earliestDelivery = order.delivery_date;
+            }
+          }
         }
       });
 
@@ -4922,7 +4600,11 @@
       });
 
       // Calculate worker productivity - count only active master workers, not deleted ones
-      // ...existing code...
+      const activeMasterWorkers = getMasterWorkers(); // Get only existing master workers
+      const uniqueWorkers = activeMasterWorkers.length; // Count actual active workers
+      const totalHours = workers.reduce((sum, w) => sum + (w.hours_worked || 0), 0);
+      const totalOutput = workers.reduce((sum, w) => sum + (w.units_produced || 0), 0);
+      const avgProductivity = totalHours > 0 && totalOutput > 0 ? totalOutput / totalHours : 10; // default 10 units/hour if no data
 
       container.innerHTML = `
         <div class="space-y-4">
@@ -8084,11 +7766,234 @@
       const filteredWorkers = getFilteredData(getWorkers());
       const filteredSales = getFilteredData(getSales());
       const filteredOrders = getFilteredData(getOrders());
-      // ...existing code...
+
+      // Calculate required production based on orders
+      const ordersByProduct = {};
+      filteredOrders.filter(o => !o.settled).forEach(order => {
+        const product = order.product_name;
+        if (!ordersByProduct[product]) ordersByProduct[product] = 0;
+        ordersByProduct[product] += order.quantity || 0;
+      });
+
+      // Check production vs orders
+      const productionByProduct = {};
+      filteredProduction.forEach(prod => {
+        const product = prod.product_name;
+        if (!productionByProduct[product]) productionByProduct[product] = 0;
+        productionByProduct[product] += prod.units_produced || 0;
+      });
+
+      Object.keys(ordersByProduct).forEach(product => {
+        const required = ordersByProduct[product];
+        const produced = productionByProduct[product] || 0;
+        if (produced < required) {
+          alerts.push({
+            type: 'danger',
+            title: `Production Below Target: ${product}`,
+            message: `Required: ${required}, Produced: ${produced}. Short by ${required - produced} units.`
+          });
+        }
+      });
+
+      // Check for high wastage
+      filteredProduction.forEach(prod => {
+        if (prod.wastage_percent > 15) {
+          alerts.push({
+            type: 'warning',
+            title: `High Wastage Alert: ${prod.product_name}`,
+            message: `Wastage at ${prod.wastage_percent}% on ${formatDate(prod.date)}. Review production process.`
+          });
+        }
+      });
+
+      // Check for low worker productivity
+      filteredWorkers.forEach(worker => {
+        const productivity = worker.hours_worked > 0 ? (worker.units_produced / worker.hours_worked) : 0;
+        if (productivity < 5) {
+          alerts.push({
+            type: 'warning',
+            title: `Low Productivity: ${worker.worker_name}`,
+            message: `Only ${productivity.toFixed(1)} units/hour on ${formatDate(worker.date)} for ${worker.product_name}.`
+          });
+        }
+      });
+
+      // Check selling price vs cost
+      filteredSales.forEach(sale => {
+        const productions = filteredProduction.filter(p => p.product_name === sale.name);
+        if (productions.length > 0) {
+          const totalCost = productions.reduce((sum, p) => sum + p.total_cost, 0);
+          const totalUnits = productions.reduce((sum, p) => sum + p.units_produced, 0);
+          const costPerUnit = totalUnits > 0 ? totalCost / totalUnits : 0;
+          const sellingPricePerUnit = sale.quantity > 0 ? sale.selling_price / sale.quantity : sale.selling_price;
+
+          if (sellingPricePerUnit < costPerUnit) {
+            alerts.push({
+              type: 'danger',
+              title: `Selling Below Cost: ${sale.name}`,
+              message: `Sale to ${sale.customer_name} at ${currency}${sellingPricePerUnit.toFixed(2)}/unit vs cost ${currency}${costPerUnit.toFixed(2)}/unit. Loss: ${currency}${((costPerUnit - sellingPricePerUnit) * sale.quantity).toFixed(2)}`
+            });
+          }
+        }
+      });
+
+      // Update alerts count badge
+      document.getElementById('alerts-count').textContent = alerts.length;
+
       return alerts;
     }
-// --- END OF updateAlerts ---
-  // ...existing code...
+
+    function showAlerts() {
+      const alerts = updateAlerts();
+      const modal = document.getElementById('modal');
+      const title = document.getElementById('modal-title');
+      const fields = document.getElementById('modal-fields');
+      const submitBtn = document.getElementById('modal-submit');
+      const cancelBtn = document.querySelector('#modal-form button[onclick="closeModal()"]');
+
+      submitBtn.style.display = 'none';
+      cancelBtn.textContent = 'Close';
+
+      title.textContent = `⚠️ Alerts & Warnings (${alerts.length})`;
+
+      if (alerts.length === 0) {
+        fields.innerHTML = `
+          <div class="text-center py-8">
+            <div class="text-6xl mb-4">✅</div>
+            <div class="text-xl font-bold text-green-600">All Clear!</div>
+            <div class="text-slate-600 mt-2">No alerts or warnings at this time.</div>
+          </div>
+        `;
+      } else {
+        fields.innerHTML = `
+          <div class="space-y-3 max-h-96 overflow-y-auto">
+            ${alerts.map(alert => `
+              <div class="p-3 rounded-lg border ${alert.type === 'danger' ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-300'}">
+                <div class="font-semibold ${alert.type === 'danger' ? 'text-red-700' : 'text-amber-700'} mb-1">
+                  ${alert.type === 'danger' ? '🚨' : '⚠️'} ${alert.title}
+                </div>
+                <div class="text-sm ${alert.type === 'danger' ? 'text-red-600' : 'text-amber-600'}">
+                  ${alert.message}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function deleteItem(id) {
+      deleteTarget = allData.find(d => d.__backendId === id);
+      if (deleteTarget) {
+        document.getElementById('delete-confirm').classList.remove('hidden');
+      }
+    }
+
+    function cancelDelete() {
+      deleteTarget = null;
+      document.getElementById('delete-confirm').classList.add('hidden');
+    }
+
+    async function confirmDelete() {
+      if (!deleteTarget) return;
+
+      showLoading(true);
+      const deletedItemType = deleteTarget.type; // Store type before deletion
+
+      try {
+        // Special handling for master_worker deletion
+        if (deleteTarget.type === 'master_worker') {
+          await handleWorkerDeletion(deleteTarget);
+        }
+
+        const result = await window.dataSdk.delete(deleteTarget);
+        if (!result.isOk) throw new Error('Failed to delete');
+        showToast('Deleted successfully', 'success');
+
+        // Re-render payment history if an order was deleted
+        if (deleteTarget.type === 'order') {
+          renderPaymentHistory();
+        }
+      } catch (error) {
+        showToast('Failed to delete. Please try again.', 'error');
+      }
+
+      deleteTarget = null;
+      document.getElementById('delete-confirm').classList.add('hidden');
+      showLoading(false);
+    }
+
+    // Handle worker deletion with salary proration
+    async function handleWorkerDeletion(worker) {
+      const today = new Date();
+      const currentMonth = today.toISOString().substring(0, 7); // YYYY-MM
+
+      // Find household wage entry for this worker in current month
+      const households = allData.filter(d => d.type === 'household' && d.category === 'Worker Wages');
+      const wageEntry = households.find(h =>
+        h.date && h.date.substring(0, 7) === currentMonth &&
+        h.description === `Monthly Salary - ${worker.name}`
+      );
+
+      if (!wageEntry) return; // No wage entry to update
+
+      // Get all production records for this worker in current month
+      const workerProduction = allData.filter(d =>
+        d.type === 'worker' &&
+        d.worker_id === worker.__backendId &&
+        d.date && d.date.substring(0, 7) === currentMonth
+      );
+
+      if (workerProduction.length === 0) {
+        // No work done this month, just delete the wage entry
+        await window.dataSdk.delete(wageEntry);
+        console.log(`Removed wage entry for ${worker.name} (no work done)`);
+        return;
+      }
+
+      // Calculate unique days worked
+      const daysWorked = new Set(workerProduction.map(p => p.date)).size;
+      const workingDaysInMonth = 26; // Standard working days
+      const dailyWage = worker.monthly_wage / workingDaysInMonth;
+      const proratedSalary = Math.round(dailyWage * daysWorked);
+
+      // Update the household entry with prorated amount
+      const updatedEntry = {
+        ...wageEntry,
+        description: `Monthly Salary - ${worker.name} (${daysWorked} days worked - DELETED)`,
+        cost: proratedSalary
+      };
+
+      await window.dataSdk.update(updatedEntry);
+      console.log(`Updated wage for ${worker.name}: ${daysWorked} days × ₹${dailyWage.toFixed(2)} = ₹${proratedSalary}`);
+    }
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg text-white z-50 animate-fade-in ${type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-slate-700'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Utility Functions
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
 
     function formatMonth(monthStr) {
       const [year, month] = monthStr.split('-');
@@ -8249,52 +8154,8 @@
     initApp();
     initNotificationSystem();
   </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      document.getElementById('user-name').textContent = user.fullName || user.username || 'User';
-      const badge = document.getElementById('user-role-badge');
-      if (user.role === 'user') {
-        badge.textContent = 'USER';
-        badge.classList.remove('bg-purple-600');
-        badge.classList.add('bg-blue-600');
-        // Hide all tabs except Production
-        const allowed = ['tab-workers'];
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-          if (!allowed.includes(btn.id)) {
-            btn.style.display = 'none';
-          } else {
-            btn.style.display = '';
-          }
-        });
-        // Show only production tab content
-        document.querySelectorAll('.tab-content').forEach(tc => {
-          if (tc.id !== 'content-workers') tc.style.display = 'none';
-          else tc.style.display = '';
-        });
-        // Set production tab as active
-        document.getElementById('tab-workers').classList.add('tab-active');
-      }
-
-      // User menu toggle logic
-      const userMenuBtn = document.getElementById('user-menu-btn');
-      const userMenu = document.getElementById('user-menu');
-      if (userMenuBtn && userMenu) {
-        userMenuBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          userMenu.classList.toggle('hidden');
-        });
-        // Hide menu when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!userMenu.contains(e.target) && e.target !== userMenuBtn) {
-            userMenu.classList.add('hidden');
-          }
-        });
-      }
-    });
-  </script>
-  <script src="/cloudflare-challenge.js"></script>
 </body>
+<<<<<<< HEAD
 </body>
 <script>
 // --- Personal Expenses Modal Logic (DB Integrated) ---
@@ -8411,3 +8272,6 @@ loadPersonalExpenses();
 </script>
 </script>
 </html>
+=======
+
+>>>>>>> 79d1d8e (Fix: Remove duplicate v ariable declarations in renderWorkers)
