@@ -15,6 +15,7 @@
     <script src="/js/api-client.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <!-- Removed problematic cloudflare-challenge.js script reference -->
     <script>
     // Utility: Escape HTML to prevent XSS
     function escapeHtml(str) {
@@ -370,11 +371,12 @@
   <div id="app" class="flex flex-col bg-white w-full max-w-[420px] min-h-screen h-full shadow-lg overflow-hidden" style="height: 100vh;">
     <script>
       // Set user info in header and restrict tabs for 'user' role
-      (function() {
+      document.addEventListener('DOMContentLoaded', function() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        document.getElementById('user-name').textContent = user.fullName || user.username || 'User';
+        const userNameEl = document.getElementById('user-name');
+        if (userNameEl) userNameEl.textContent = user.fullName || user.username || 'User';
         const badge = document.getElementById('user-role-badge');
-        if (user.role === 'user') {
+        if (user.role === 'user' && badge) {
           badge.textContent = 'USER';
           badge.classList.remove('bg-purple-600');
           badge.classList.add('bg-blue-600');
@@ -393,7 +395,8 @@
             else tc.style.display = '';
           });
           // Set production tab as active
-          document.getElementById('tab-workers').classList.add('tab-active');
+          const tabWorkers = document.getElementById('tab-workers');
+          if (tabWorkers) tabWorkers.classList.add('tab-active');
         }
 
         // User menu toggle logic
@@ -411,7 +414,7 @@
             }
           });
         }
-      })();
+      });
     </script>
     <header class="bg-white shadow-sm border-b border-slate-200 px-4 py-3 flex-shrink-0">
       <div class="w-full flex flex-col items-center gap-2 pt-2 pb-2">
@@ -2880,17 +2883,37 @@
 
       showToast('Generating image...', 'info');
 
-      // Save original styles
-      const originalOverflow = receiptContent.style.overflow;
-      const originalHeight = receiptContent.style.height;
-      const originalMaxHeight = receiptContent.style.maxHeight;
-      const originalBoxShadow = receiptContent.style.boxShadow;
 
-      // Expand content to fit all
+      // Save original styles for modal and content
+      const modal = document.getElementById('receipt-modal');
+      const originalModalPosition = modal.style.position;
+      const originalModalWidth = modal.style.width;
+      const originalModalHeight = modal.style.height;
+      const originalModalDisplay = modal.style.display;
+      const originalModalFlex = modal.style.flexDirection;
+      const originalModalAlign = modal.style.alignItems;
+      const originalModalJustify = modal.style.justifyContent;
+      const originalContentOverflow = receiptContent.style.overflow;
+      const originalContentHeight = receiptContent.style.height;
+      const originalContentMaxHeight = receiptContent.style.maxHeight;
+      const originalContentBoxShadow = receiptContent.style.boxShadow;
+      const originalContentWidth = receiptContent.style.width;
+      const originalContentDisplay = receiptContent.style.display;
+
+      // Expand modal and content to fit all
+      modal.style.position = 'static';
+      modal.style.width = 'auto';
+      modal.style.height = 'auto';
+      modal.style.display = 'block';
+      modal.style.flexDirection = 'initial';
+      modal.style.alignItems = 'initial';
+      modal.style.justifyContent = 'initial';
       receiptContent.style.overflow = 'visible';
       receiptContent.style.height = 'auto';
       receiptContent.style.maxHeight = 'none';
       receiptContent.style.boxShadow = 'none';
+      receiptContent.style.width = 'auto';
+      receiptContent.style.display = 'block';
 
       // Wait for all images to load
       const images = receiptContent.querySelectorAll('img');
@@ -2919,10 +2942,19 @@
         });
 
         // Restore styles
-        receiptContent.style.overflow = originalOverflow;
-        receiptContent.style.height = originalHeight;
-        receiptContent.style.maxHeight = originalMaxHeight;
-        receiptContent.style.boxShadow = originalBoxShadow;
+        modal.style.position = originalModalPosition;
+        modal.style.width = originalModalWidth;
+        modal.style.height = originalModalHeight;
+        modal.style.display = originalModalDisplay;
+        modal.style.flexDirection = originalModalFlex;
+        modal.style.alignItems = originalModalAlign;
+        modal.style.justifyContent = originalModalJustify;
+        receiptContent.style.overflow = originalContentOverflow;
+        receiptContent.style.height = originalContentHeight;
+        receiptContent.style.maxHeight = originalContentMaxHeight;
+        receiptContent.style.boxShadow = originalContentBoxShadow;
+        receiptContent.style.width = originalContentWidth;
+        receiptContent.style.display = originalContentDisplay;
         const tempStyle = document.getElementById('temp-hide-watermark');
         if (tempStyle) tempStyle.remove();
 
