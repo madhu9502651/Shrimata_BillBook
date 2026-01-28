@@ -544,9 +544,26 @@
                           </form>
                         </div>
                       </div>
-                // --- Personal Expenses Modal Logic ---
+                // --- Personal Expenses Modal Logic (DB Integrated) ---
                 let editingPersonalExpenseId = null;
                 let personalExpenses = [];
+
+                async function loadPersonalExpenses() {
+                  try {
+                    const res = await api.getData('personal_expense');
+                    personalExpenses = (res.data || []).map(e => ({
+                      id: e._id,
+                      name: e.name,
+                      amount: e.amount,
+                      dueDate: e.dueDate,
+                      include: e.include,
+                      settled: e.settled
+                    }));
+                    renderPersonalExpenses();
+                  } catch (e) {
+                    showToast('Failed to load personal expenses', 'error');
+                  }
+                }
 
                 function openPersonalExpenseModal(id = null) {
                   const modal = document.getElementById('personal-expense-modal');
@@ -576,7 +593,7 @@
                   editingPersonalExpenseId = null;
                 }
 
-                document.getElementById('personal-expense-form').onsubmit = function(e) {
+                document.getElementById('personal-expense-form').onsubmit = async function(e) {
                   e.preventDefault();
                   const name = document.getElementById('personal-expense-name').value.trim();
                   const amount = parseFloat(document.getElementById('personal-expense-amount').value);
@@ -584,18 +601,19 @@
                   const include = document.getElementById('personal-expense-include').checked;
                   const settled = document.getElementById('personal-expense-settled').checked;
                   if (!name || isNaN(amount)) return;
-                  if (editingPersonalExpenseId) {
-                    // Edit
-                    const idx = personalExpenses.findIndex(e => e.id === editingPersonalExpenseId);
-                    if (idx !== -1) {
-                      personalExpenses[idx] = { ...personalExpenses[idx], name, amount, dueDate, include, settled };
+                  try {
+                    if (editingPersonalExpenseId) {
+                      // Edit
+                      await api.updateRecord(editingPersonalExpenseId, { type: 'personal_expense', name, amount, dueDate, include, settled });
+                    } else {
+                      // Add
+                      await api.createRecord({ type: 'personal_expense', name, amount, dueDate, include, settled });
                     }
-                  } else {
-                    // Add
-                    personalExpenses.push({ id: Date.now(), name, amount, dueDate, include, settled });
+                    await loadPersonalExpenses();
+                    closePersonalExpenseModal();
+                  } catch (err) {
+                    showToast('Failed to save personal expense', 'error');
                   }
-                  renderPersonalExpenses();
-                  closePersonalExpenseModal();
                 };
 
                 function renderPersonalExpenses() {
@@ -610,34 +628,46 @@
                       <td class="px-4 py-2">₹${exp.amount.toLocaleString()}</td>
                       <td class="px-4 py-2">${exp.dueDate ? formatDate(exp.dueDate) : '-'}</td>
                       <td class="px-4 py-2 text-center">
-                        <button onclick="togglePersonalExpenseInclude(${exp.id})" class="rounded px-2 py-1 ${exp.include ? 'bg-green-200 text-green-800' : 'bg-slate-200 text-slate-500'}">${exp.include ? 'Included' : 'Not Included'}</button>
+                        <button onclick="togglePersonalExpenseInclude('${exp.id}')" class="rounded px-2 py-1 ${exp.include ? 'bg-green-200 text-green-800' : 'bg-slate-200 text-slate-500'}">${exp.include ? 'Included' : 'Not Included'}</button>
                       </td>
                       <td class="px-4 py-2 text-center">
-                        <button onclick="togglePersonalExpenseSettled(${exp.id})" class="rounded px-2 py-1 ${exp.settled ? 'bg-blue-200 text-blue-800' : 'bg-slate-200 text-slate-500'}">${exp.settled ? 'Settled' : 'Unsettled'}</button>
+                        <button onclick="togglePersonalExpenseSettled('${exp.id}')" class="rounded px-2 py-1 ${exp.settled ? 'bg-blue-200 text-blue-800' : 'bg-slate-200 text-slate-500'}">${exp.settled ? 'Settled' : 'Unsettled'}</button>
                       </td>
                       <td class="px-4 py-2 text-center">
-                        <button onclick="openPersonalExpenseModal(${exp.id})" class="text-blue-600 hover:underline mr-2">Edit</button>
-                        <button onclick="deletePersonalExpense(${exp.id})" class="text-red-600 hover:underline">Delete</button>
+                        <button onclick="openPersonalExpenseModal('${exp.id}')" class="text-blue-600 hover:underline mr-2">Edit</button>
+                        <button onclick="deletePersonalExpense('${exp.id}')" class="text-red-600 hover:underline">Delete</button>
                       </td>
                     </tr>
                   `).join('');
                 }
 
-                function togglePersonalExpenseInclude(id) {
+                async function togglePersonalExpenseInclude(id) {
                   const exp = personalExpenses.find(e => e.id === id);
-                  if (exp) { exp.include = !exp.include; renderPersonalExpenses(); }
+                  if (exp) {
+                    try {
+                      await api.updateRecord(id, { ...exp, include: !exp.include, type: 'personal_expense' });
+                      await loadPersonalExpenses();
+                    } catch (err) { showToast('Failed to update', 'error'); }
+                  }
                 }
-                function togglePersonalExpenseSettled(id) {
+                async function togglePersonalExpenseSettled(id) {
                   const exp = personalExpenses.find(e => e.id === id);
-                  if (exp) { exp.settled = !exp.settled; renderPersonalExpenses(); }
+                  if (exp) {
+                    try {
+                      await api.updateRecord(id, { ...exp, settled: !exp.settled, type: 'personal_expense' });
+                      await loadPersonalExpenses();
+                    } catch (err) { showToast('Failed to update', 'error'); }
+                  }
                 }
-                function deletePersonalExpense(id) {
-                  personalExpenses = personalExpenses.filter(e => e.id !== id);
-                  renderPersonalExpenses();
+                async function deletePersonalExpense(id) {
+                  try {
+                    await api.deleteRecord(id);
+                    await loadPersonalExpenses();
+                  } catch (err) { showToast('Failed to delete', 'error'); }
                 }
 
-                // Initial render
-                renderPersonalExpenses();
+                // Initial load
+                loadPersonalExpenses();
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <h2 class="text-xl font-bold">🧾 Personal Expenses</h2>
                   <button id="btn-add-personal" onclick="openPersonalExpenseModal()"
