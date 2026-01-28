@@ -2849,11 +2849,93 @@
         const tempStyle = document.getElementById('temp-hide-watermark');
         if (tempStyle) tempStyle.remove();
 
-        // Convert canvas to base64 PNG
+        // Convert canvas to base64 PNG and Blob
         const pngData = canvas.toDataURL('image/png');
         const fileName = `receipt-${order.customer_name || 'order'}.png`;
 
-        // Send PNG to backend using SecureAPI for robust error handling
+        // Try to use Web Share API for image sharing (mobile)
+        let shared = false;
+        if (navigator.canShare && window.File && typeof navigator.share === 'function') {
+          try {
+            // Convert base64 to Blob
+            const res = await fetch(pngData);
+            const blob = await res.blob();
+            const file = new File([blob], fileName, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: `Receipt - ${order.customer_name}`,
+                text: 'Order receipt from Shri Mata',
+                files: [file]
+              });
+              showToast('Receipt shared!', 'success');
+              shared = true;
+              return;
+            }
+          } catch (error) {
+            if (error.name !== 'AbortError') {
+              showToast('Failed to share via app. Uploading to server...', 'warning');
+            } else {
+              return;
+            }
+          }
+        }
+        if (!shared && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          // Fallback: copy receipt text to clipboard
+          let receiptText = '';
+          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `   SHRI MATA\n`;
+          receiptText += `   Eco-Friendly Bliss\n`;
+          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `   ORDER RECEIPT\n`;
+          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+          receiptText += `Customer: ${order.customer_name || 'N/A'}\n`;
+          receiptText += `Order Date: ${formatDate(order.issue_date) || 'N/A'}\n`;
+          receiptText += `Delivery Date: ${formatDate(order.delivery_date) || 'N/A'}\n`;
+          receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `ITEMS\n`;
+          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `Product: ${order.product_name || 'N/A'}\n`;
+          if (order.length && order.width) {
+            receiptText += `Size: ${order.length}×${order.width}${order.dimension_unit || 'cm'}\n`;
+          }
+          if (order.quantity) {
+            receiptText += `Quantity: ${order.quantity}\n`;
+          }
+          receiptText += `Price: ${getCurrency()}${(order.price || 0).toLocaleString()}\n`;
+          if (order.payment_history && order.payment_history.length > 0) {
+            receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            receiptText += `PAYMENT HISTORY\n`;
+            receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            order.payment_history.forEach((payment, idx) => {
+              receiptText += `${idx + 1}. ${getCurrency()}${(payment.amount || 0).toLocaleString()}`;
+              receiptText += ` - ${formatDate(payment.date)}`;
+              if (payment.time) receiptText += ` at ${payment.time}`;
+              if (payment.mode) {
+                const modes = { cash: '💵 Cash', phonepay: '📱 PhonePe', gpay: '💳 GPay', paytm: '💰 Paytm' };
+                receiptText += ` (${modes[payment.mode] || '🏦 Bank'})`;
+              }
+              if (payment.note) receiptText += ` - ${payment.note}`;
+              receiptText += `\n`;
+            });
+          }
+          receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `SUMMARY\n`;
+          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `Total Price: ${getCurrency()}${(order.price || 0).toLocaleString()}\n`;
+          receiptText += `Amount Paid: ${getCurrency()}${(order.amount_paid || 0).toLocaleString()}\n`;
+          const balance = (order.balance !== undefined) ? order.balance : (order.price - (order.amount_paid || 0));
+          receiptText += `Remaining: ${getCurrency()}${balance.toLocaleString()}\n`;
+          if (order.promised_payment_date && balance > 0) {
+            receiptText += `\n🗓️ To be collected by: ${formatDate(order.promised_payment_date)}\n`;
+          }
+          receiptText += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          receiptText += `For queries contact:\n`;
+          receiptText += `Shri Mata +918328501239\n`;
+          receiptText += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          copyToClipboard(receiptText);
+          showToast('Sharing to WhatsApp or other apps is not supported on this device/browser. Receipt text copied to clipboard. You can paste it in WhatsApp or any app.', 'info');
+        }
+        // Fallback: upload to server as before
         try {
           const result = await api.createShareReceipt({ pngData, fileName });
           if (result.success) {
