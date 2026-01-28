@@ -3856,6 +3856,11 @@
         const worker = data.worker;
         const workerId = worker.__backendId;
 
+        // Calculate attendance counts for this worker
+        const presentCount = data.records.filter(r => r.status === 'present').length;
+        const halfDayCount = data.records.filter(r => r.status === 'half-day').length;
+        const absentCount = data.records.filter(r => r.status === 'absent').length;
+
         // Get the month from records for salary calculation
         const month = data.records.length > 0 && data.records[0].date
           ? data.records[0].date.substring(0, 7)
