@@ -2683,19 +2683,16 @@
         return;
       }
 
-      // If only one order, show and share receipt for that order
+      // If only one order, just show the receipt modal for that order
       if (customerOrders.length === 1) {
         showOrderReceipt(customerOrders[0].__backendId);
-        // Wait for the modal and content to render, then share
-        setTimeout(() => shareReceiptContent(), 300);
         return;
       }
 
-      // For multiple orders, show and share the first unsettled order or the most recent one
+      // For multiple orders, show the first unsettled order or the most recent one
       const unsettledOrder = customerOrders.find(o => !o.settled);
       const orderToShow = unsettledOrder || customerOrders[customerOrders.length - 1];
       showOrderReceipt(orderToShow.__backendId);
-      setTimeout(() => shareReceiptContent(), 300);
     }
 
     // Order Receipt Functions
