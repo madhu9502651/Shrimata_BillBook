@@ -2874,26 +2874,41 @@
         return;
       }
 
+
       const receiptContent = document.getElementById('receipt-content');
       if (!receiptContent) return;
 
       showToast('Generating image...', 'info');
 
+      // Save original styles
+      const originalOverflow = receiptContent.style.overflow;
+      const originalHeight = receiptContent.style.height;
+      const originalMaxHeight = receiptContent.style.maxHeight;
+      const originalBoxShadow = receiptContent.style.boxShadow;
+
+      // Expand content to fit all
+      receiptContent.style.overflow = 'visible';
+      receiptContent.style.height = 'auto';
+      receiptContent.style.maxHeight = 'none';
+      receiptContent.style.boxShadow = 'none';
+
+      // Wait for all images to load
+      const images = receiptContent.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => { img.onload = img.onerror = resolve; });
+      }));
+
+      // Temporarily hide the watermark to avoid CORS issues
+      const style = document.createElement('style');
+      style.id = 'temp-hide-watermark';
+      style.textContent = '#receipt-content::before { display: none !important; }';
+      document.head.appendChild(style);
+
+      // Wait a moment for layout
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       try {
-        // Temporarily hide the watermark to avoid CORS issues
-        const style = document.createElement('style');
-        style.id = 'temp-hide-watermark';
-        style.textContent = '#receipt-content::before { display: none !important; }';
-        document.head.appendChild(style);
-
-        // Find and temporarily hide the logo image
-        const logoImg = receiptContent.querySelector('img[alt="Shri Mata Logo"]');
-        const originalDisplay = logoImg ? logoImg.style.display : null;
-        if (logoImg) logoImg.style.display = 'none';
-
-        // Wait a moment
-        await new Promise(resolve => setTimeout(resolve, 100));
-
         // Capture the receipt as canvas
         const canvas = await html2canvas(receiptContent, {
           backgroundColor: '#ffffff',
@@ -2903,8 +2918,11 @@
           useCORS: false
         });
 
-        // Restore the logo and watermark
-        if (logoImg && originalDisplay !== null) logoImg.style.display = originalDisplay;
+        // Restore styles
+        receiptContent.style.overflow = originalOverflow;
+        receiptContent.style.height = originalHeight;
+        receiptContent.style.maxHeight = originalMaxHeight;
+        receiptContent.style.boxShadow = originalBoxShadow;
         const tempStyle = document.getElementById('temp-hide-watermark');
         if (tempStyle) tempStyle.remove();
 
