@@ -32,6 +32,13 @@
         })[s];
       });
     }
+    // Utility: Format date as DD MMM YYYY (e.g., 28 Jan 2026)
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d)) return dateStr;
+      return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
     </script>
   <script>
     // Ensure global api instance
