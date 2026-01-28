@@ -1170,7 +1170,7 @@
           </div>
         </div>
         <div id="receipt-content" class="p-8 bg-white relative overflow-y-auto flex-1"
-          style="min-height: 400px; max-width: 800px; margin: 0 auto; width: 100%;">
+          style="min-height: 400px; max-width: 800px; margin: 0 auto; width: 794px;">
           <!-- Receipt will be generated here -->
         </div>
       </div>
@@ -2951,10 +2951,10 @@
 
       try {
 
-        // Capture the receipt as canvas with higher scale for clarity
+        // Capture the receipt as canvas with A4 width and moderate scale
         const canvas = await html2canvas(receiptContent, {
           backgroundColor: '#ffffff',
-          scale: 4, // Higher scale for better clarity
+          scale: 2, // Good clarity, not excessive size
           logging: false,
           allowTaint: true,
           useCORS: false
