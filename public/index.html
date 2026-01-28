@@ -2900,6 +2900,7 @@
       const originalContentWidth = receiptContent.style.width;
       const originalContentDisplay = receiptContent.style.display;
 
+
       // Expand modal and content to fit all
       modal.style.position = 'static';
       modal.style.width = 'auto';
@@ -2909,7 +2910,7 @@
       modal.style.alignItems = 'initial';
       modal.style.justifyContent = 'initial';
       receiptContent.style.overflow = 'visible';
-      receiptContent.style.height = 'auto';
+      receiptContent.style.height = receiptContent.scrollHeight + 'px'; // Force full height
       receiptContent.style.maxHeight = 'none';
       receiptContent.style.boxShadow = 'none';
       receiptContent.style.width = 'auto';
