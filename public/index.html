@@ -2901,20 +2901,42 @@
       const originalContentDisplay = receiptContent.style.display;
 
 
-      // Expand modal and content to fit all
-      modal.style.position = 'static';
-      modal.style.width = 'auto';
-      modal.style.height = 'auto';
-      modal.style.display = 'block';
-      modal.style.flexDirection = 'initial';
-      modal.style.alignItems = 'initial';
-      modal.style.justifyContent = 'initial';
-      receiptContent.style.overflow = 'visible';
+
+      // Remove flex, height, minHeight, maxHeight, and overflow from all parents up to modal
+      const parents = [];
+      let el = receiptContent;
+      while (el && el !== modal.parentElement && el !== document.body) {
+        parents.push(el);
+        el = el.parentElement;
+      }
+      // Save original styles
+      const originalParentStyles = parents.map(p => ({
+        element: p,
+        style: {
+          display: p.style.display,
+          flex: p.style.flex,
+          flexDirection: p.style.flexDirection,
+          alignItems: p.style.alignItems,
+          justifyContent: p.style.justifyContent,
+          height: p.style.height,
+          minHeight: p.style.minHeight,
+          maxHeight: p.style.maxHeight,
+          overflow: p.style.overflow,
+        }
+      }));
+      // Remove constraints
+      parents.forEach(p => {
+        p.style.display = 'block';
+        p.style.flex = 'none';
+        p.style.flexDirection = 'initial';
+        p.style.alignItems = 'initial';
+        p.style.justifyContent = 'initial';
+        p.style.height = 'auto';
+        p.style.minHeight = '0';
+        p.style.maxHeight = 'none';
+        p.style.overflow = 'visible';
+      });
       receiptContent.style.height = receiptContent.scrollHeight + 'px'; // Force full height
-      receiptContent.style.maxHeight = 'none';
-      receiptContent.style.boxShadow = 'none';
-      receiptContent.style.width = 'auto';
-      receiptContent.style.display = 'block';
 
       // Wait for all images to load
       const images = receiptContent.querySelectorAll('img');
@@ -2956,6 +2978,18 @@
         receiptContent.style.boxShadow = originalContentBoxShadow;
         receiptContent.style.width = originalContentWidth;
         receiptContent.style.display = originalContentDisplay;
+        // Restore all parent styles
+        originalParentStyles.forEach(({element, style}) => {
+          element.style.display = style.display;
+          element.style.flex = style.flex;
+          element.style.flexDirection = style.flexDirection;
+          element.style.alignItems = style.alignItems;
+          element.style.justifyContent = style.justifyContent;
+          element.style.height = style.height;
+          element.style.minHeight = style.minHeight;
+          element.style.maxHeight = style.maxHeight;
+          element.style.overflow = style.overflow;
+        });
         const tempStyle = document.getElementById('temp-hide-watermark');
         if (tempStyle) tempStyle.remove();
 
