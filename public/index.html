@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Manager Pro - Shrimata BillBook</title>
 
+  <script src="/js/api-client.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-  <!-- Secure API Client -->
-  <script src="/js/api-client.js"></script>
   <script>
+    // Ensure global api instance
+    window.api = window.api || new SecureAPI();
     // Secure data SDK that uses backend API
     (function () {
       let dataHandlerRef = null;
@@ -2450,7 +2450,7 @@
                 <div class="font-semibold text-base truncate">${escapeHtml(customer)} ${allSettled ? '<span class=\"text-xs text-green-600 font-normal\">✓ Settled</span>' : ''}</div>
                 <div class="text-xs text-slate-500 mt-0.5">${totalOrders} ${totalOrders === 1 ? 'order' : 'orders'} • ${allPayments.length} ${allPayments.length === 1 ? 'payment' : 'payments'}</div>
               </div>
-              <button onclick="(function(e){e.stopPropagation();shareReceipt('${customer.replace(/'/g, "\\'")}");})(event);" class="ml-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" title="Share Receipt">
+              <button onclick="shareReceipt('${customer.replace(/'/g, "\\'")}'); event.stopPropagation();" class="ml-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" title="Share Receipt">
                 <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                 </svg>
@@ -2853,17 +2853,17 @@
         const pngData = canvas.toDataURL('image/png');
         const fileName = `receipt-${order.customer_name || 'order'}.png`;
 
-        // Send PNG to backend
-        const response = await fetch('/api/share-receipt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pngData, fileName })
-        });
-        const result = await response.json();
-        if (result.success) {
-          showToast('Receipt shared to server!', 'success');
-        } else {
-          showToast('Failed to share receipt: ' + (result.message || 'Unknown error'), 'error');
+        // Send PNG to backend using SecureAPI for robust error handling
+        try {
+          const result = await api.createShareReceipt({ pngData, fileName });
+          if (result.success) {
+            showToast('Receipt shared to server!', 'success');
+          } else {
+            showToast('Failed to share receipt: ' + (result.message || 'Unknown error'), 'error');
+          }
+        } catch (error) {
+          console.error('API error:', error);
+          showToast('Failed to share receipt. Error: ' + error.message, 'error');
         }
       } catch (error) {
         console.error('Error capturing or sharing receipt:', error);
