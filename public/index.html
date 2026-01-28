@@ -3,14 +3,10 @@
 
 <head>
     <script>
-      // Redirect to login if not authenticated
-      (function() {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-        if (!token || !user) {
-          window.location.href = '/login.html';
-        }
-      })();
+      // Always redirect to login if not authenticated (run as soon as possible)
+      if (!localStorage.getItem('token') || !localStorage.getItem('user')) {
+        window.location.replace('/login.html');
+      }
     </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -356,9 +352,16 @@
       <div class="w-full flex flex-col items-center gap-2 pt-2 pb-2">
         <h1 id="app-title" class="text-xl font-bold text-slate-800 w-full text-center tracking-tight leading-tight mb-2">Shrimata Business Manager Pro</h1>
         <div class="w-full flex flex-row flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-2 rounded-lg border border-purple-200 flex-1 min-w-0">
-            <span class="text-base align-middle font-medium text-slate-700 truncate">👤 <span id="user-name">User</span></span>
+          <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-2 rounded-lg border border-purple-200 flex-1 min-w-0 relative">
+            <button id="user-menu-btn" class="text-base align-middle font-medium text-slate-700 truncate flex items-center gap-1 focus:outline-none" style="background: none; border: none; cursor: pointer;">
+              👤 <span id="user-name">User</span>
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
             <span id="user-role-badge" class="text-xs px-2 py-1 rounded-full bg-purple-600 text-white font-semibold">ADMIN</span>
+            <div id="user-menu" class="absolute right-0 top-12 bg-white border border-slate-200 rounded shadow-lg z-50 hidden min-w-[160px]">
+              <button id="change-password-btn" class="block w-full text-left px-4 py-2 hover:bg-slate-100 text-slate-700">Change Password</button>
+              <button id="logout-btn" class="block w-full text-left px-4 py-2 hover:bg-slate-100 text-red-600">Logout</button>
+            </div>
           </div>
           <div class="flex gap-2 flex-shrink-0 mt-2">
             <button onclick="showAlerts()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors" title="View Alerts">
@@ -1294,35 +1297,103 @@
       const attendanceRecords = getAttendance();
       const monthRecords = attendanceRecords.filter(a =>
         a.worker_id === worker.__backendId &&
-        a.date &&
-        a.date.startsWith(month)
-      );
+        <script>
+          // Set user info in header, restrict tabs for 'user', and handle user menu
+          (function() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.fullName || user.username || 'User';
+            const badge = document.getElementById('user-role-badge');
+            if (user.role === 'user') {
+              badge.textContent = 'USER';
+              badge.classList.remove('bg-purple-600');
+              badge.classList.add('bg-blue-600');
+              // Hide all tabs except Production
+              const allowed = ['tab-workers'];
+              document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (!allowed.includes(btn.id)) {
+                  btn.style.display = 'none';
+                } else {
+                  btn.style.display = '';
+                }
+              });
+              // Show only production tab content
+              document.querySelectorAll('.tab-content').forEach(tc => {
+                if (tc.id !== 'content-workers') tc.style.display = 'none';
+                else tc.style.display = '';
+              });
+              // Set production tab as active
+              document.getElementById('tab-workers').classList.add('tab-active');
+            }
+            // User menu logic
+            const menuBtn = document.getElementById('user-menu-btn');
+            const menu = document.getElementById('user-menu');
+            menuBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              menu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => menu.classList.add('hidden'));
+            menu.addEventListener('click', e => e.stopPropagation());
+            document.getElementById('logout-btn').onclick = function() {
+              localStorage.clear();
+              window.location.replace('/login.html');
+            };
+            document.getElementById('change-password-btn').onclick = function() {
+              showChangePasswordModal();
+            };
+          })();
 
-      const presentCount = monthRecords.filter(r => r.status === 'present').length;
-      const halfDayCount = monthRecords.filter(r => r.status === 'half-day').length;
-      const absentCount = monthRecords.filter(r => r.status === 'absent').length;
-      const totalDaysTracked = presentCount + halfDayCount + absentCount;
-
-      // Calculate actual salary for days tracked so far
-      const calculatedSalary = calculateMonthlySalary(worker, presentCount, halfDayCount, absentCount, month);
-
-      // Find existing wage entry for this month
-      const households = allData.filter(d => d.type === 'household' && d.category === 'Worker Wages');
-      const existingWage = households.find(h =>
-        h.date && h.date.substring(0, 7) === month &&
-        h.description && h.description.includes(worker.name)
-      );
-
-      const description = `Monthly Salary - ${worker.name} (${totalDaysTracked} days: P:${presentCount} H:${halfDayCount} A:${absentCount})`;
-
-      if (existingWage) {
-        // Update existing wage entry
-        const updated = {
-          ...existingWage,
-          cost: calculatedSalary,
-          description: description,
-          updated_at: new Date().toISOString()
-        };
+          // Show change password modal
+          function showChangePasswordModal() {
+            if (document.getElementById('change-password-modal')) return;
+            const modal = document.createElement('div');
+            modal.id = 'change-password-modal';
+            modal.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40';
+            modal.innerHTML = `
+              <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs relative">
+                <button onclick="document.getElementById('change-password-modal').remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-500">&times;</button>
+                <h2 class="text-lg font-bold mb-4 text-center">Change Password</h2>
+                <form id="change-password-form" class="flex flex-col gap-3">
+                  <input type="password" id="current-password" placeholder="Current Password" class="input-field border px-3 py-2 rounded" required>
+                  <input type="password" id="new-password" placeholder="New Password" class="input-field border px-3 py-2 rounded" required>
+                  <button type="submit" class="btn-primary py-2 rounded text-white font-semibold">Update Password</button>
+                </form>
+                <div id="change-password-error" class="text-red-600 mt-2 text-center hidden"></div>
+                <div id="change-password-success" class="text-green-600 mt-2 text-center hidden"></div>
+              </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('change-password-form').onsubmit = async function(e) {
+              e.preventDefault();
+              const currentPassword = document.getElementById('current-password').value;
+              const newPassword = document.getElementById('new-password').value;
+              const errorDiv = document.getElementById('change-password-error');
+              const successDiv = document.getElementById('change-password-success');
+              errorDiv.classList.add('hidden');
+              successDiv.classList.add('hidden');
+              try {
+                const res = await fetch('/api/auth/change-password', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                  },
+                  body: JSON.stringify({ currentPassword, newPassword })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to change password');
+                successDiv.textContent = 'Password changed successfully. Please login again.';
+                successDiv.classList.remove('hidden');
+                setTimeout(() => {
+                  localStorage.clear();
+                  window.location.replace('/login.html');
+                }, 1500);
+              } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.classList.remove('hidden');
+              }
+            };
+          }
+        </script>
         await window.dataSdk.update(updated);
         console.log(`✅ Updated salary for ${worker.name}: ₹${calculatedSalary}`);
       } else {
