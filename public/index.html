@@ -39,6 +39,30 @@
       if (isNaN(d)) return dateStr;
       return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
     }
+
+    // Utility: Show toast notification
+    function showToast(message, type = 'info', duration = 3000) {
+      // Remove any existing toast
+      const old = document.getElementById('global-toast');
+      if (old) old.remove();
+      // Create toast
+      const toast = document.createElement('div');
+      toast.id = 'global-toast';
+      toast.textContent = message;
+      toast.style.position = 'fixed';
+      toast.style.bottom = '32px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.background = type === 'error' ? '#dc2626' : (type === 'success' ? '#059669' : '#334155');
+      toast.style.color = '#fff';
+      toast.style.padding = '12px 24px';
+      toast.style.borderRadius = '8px';
+      toast.style.fontSize = '1rem';
+      toast.style.zIndex = 9999;
+      toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, duration);
+    }
     </script>
   <script>
     // Ensure global api instance
