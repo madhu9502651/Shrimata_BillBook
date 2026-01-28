@@ -7878,235 +7878,11 @@
       const filteredWorkers = getFilteredData(getWorkers());
       const filteredSales = getFilteredData(getSales());
       const filteredOrders = getFilteredData(getOrders());
-
-    // Share or download receipt as image
-    async function shareReceipt(order) {
-      // Check if html2canvas is available
-      if (typeof html2canvas === 'undefined') {
-        showToast('Image library not loaded. Please refresh the page.', 'error');
-        return;
-      }
-
-      const receiptContent = document.getElementById('receipt-content');
-      if (!receiptContent) return;
-
-      showToast('Generating image...', 'info');
-
-      try {
-        // Temporarily hide the watermark to avoid CORS issues
-        const style = document.createElement('style');
-        style.id = 'temp-hide-watermark';
-        style.textContent = '#receipt-content::before { display: none !important; }';
-        document.head.appendChild(style);
-
-        // Find and temporarily hide the logo image
-        const logoImg = receiptContent.querySelector('img[alt="Shri Mata Logo"]');
-        const originalDisplay = logoImg ? logoImg.style.display : null;
-        if (logoImg) logoImg.style.display = 'none';
-
-        // Wait a moment
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // Capture the receipt as canvas
-        const canvas = await html2canvas(receiptContent, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          logging: false,
-          allowTaint: true,
-          useCORS: false
-        });
-
-        // Restore logo
-        if (logoImg && originalDisplay !== null) logoImg.style.display = originalDisplay;
-        const tempStyle = document.getElementById('temp-hide-watermark');
-        if (tempStyle) tempStyle.remove();
-
-        // Convert canvas to blob
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            showToast('Failed to generate image', 'error');
-            return;
-          }
-          const file = new File([blob], `receipt-${order.customer_name || 'order'}.png`, { type: 'image/png' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({
-                files: [file],
-                title: `Receipt - ${order.customer_name}`,
-                text: `Order receipt for ${order.customer_name}`
-              });
-              showToast('Receipt shared successfully!', 'success');
-            } catch (error) {
-              if (error.name !== 'AbortError') {
-                downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
-              }
-            }
-          } else {
-            downloadImage(canvas, `receipt-${order.customer_name || 'order'}.png`);
-          }
-        }, 'image/png');
-      } catch (error) {
-        console.error('Error capturing receipt:', error);
-        showToast('Failed to generate image. Error: ' + error.message, 'error');
-      }
+      // ...existing code...
+      return alerts;
     }
-    }
-    function showAlerts() {
-      const alerts = updateAlerts();
-      // Defensive: alerts should always be an array
-      if (!Array.isArray(alerts)) {
-        console.warn('updateAlerts() did not return an array.');
-        return;
-      }
-      const modal = document.getElementById('modal');
-      const title = document.getElementById('modal-title');
-      const fields = document.getElementById('modal-fields');
-      const submitBtn = document.getElementById('modal-submit');
-      const cancelBtn = document.querySelector('#modal-form button[onclick="closeModal()"]');
-
-      submitBtn.style.display = 'none';
-      cancelBtn.textContent = 'Close';
-
-      title.textContent = `⚠️ Alerts & Warnings (${alerts.length})`;
-
-      if (alerts.length === 0) {
-        fields.innerHTML = `
-          <div class="text-center py-8">
-            <div class="text-6xl mb-4">✅</div>
-            <div class="text-xl font-bold text-green-600">All Clear!</div>
-            <div class="text-slate-600 mt-2">No alerts or warnings at this time.</div>
-          </div>
-        `;
-      } else {
-        fields.innerHTML = `
-          <div class="space-y-3 max-h-96 overflow-y-auto">
-            ${alerts.map(alert => `
-              <div class="p-3 rounded-lg border ${alert.type === 'danger' ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-300'}">
-                <div class="font-semibold ${alert.type === 'danger' ? 'text-red-700' : 'text-amber-700'} mb-1">
-                  ${alert.type === 'danger' ? '🚨' : '⚠️'} ${alert.title}
-                </div>
-                <div class="text-sm ${alert.type === 'danger' ? 'text-red-600' : 'text-amber-600'}">
-                  ${alert.message}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
-      modal.classList.remove('hidden');
-    }
-
-    function deleteItem(id) {
-      deleteTarget = allData.find(d => d.__backendId === id);
-      if (deleteTarget) {
-        document.getElementById('delete-confirm').classList.remove('hidden');
-      }
-    }
-
-    function cancelDelete() {
-      deleteTarget = null;
-      document.getElementById('delete-confirm').classList.add('hidden');
-    }
-
-    async function confirmDelete() {
-      if (!deleteTarget) return;
-
-      showLoading(true);
-      const deletedItemType = deleteTarget.type; // Store type before deletion
-
-      try {
-        // Special handling for master_worker deletion
-        if (deleteTarget.type === 'master_worker') {
-          await handleWorkerDeletion(deleteTarget);
-        }
-
-        const result = await window.dataSdk.delete(deleteTarget);
-        if (!result.isOk) throw new Error('Failed to delete');
-        showToast('Deleted successfully', 'success');
-
-        // Re-render payment history if an order was deleted
-        if (deleteTarget.type === 'order') {
-          renderPaymentHistory();
-        }
-      } catch (error) {
-        showToast('Failed to delete. Please try again.', 'error');
-      }
-
-      deleteTarget = null;
-      document.getElementById('delete-confirm').classList.add('hidden');
-      showLoading(false);
-    }
-
-    // Handle worker deletion with salary proration
-    async function handleWorkerDeletion(worker) {
-      const today = new Date();
-      const currentMonth = today.toISOString().substring(0, 7); // YYYY-MM
-
-      // Find household wage entry for this worker in current month
-      const households = allData.filter(d => d.type === 'household' && d.category === 'Worker Wages');
-      const wageEntry = households.find(h =>
-        h.date && h.date.substring(0, 7) === currentMonth &&
-        h.description === `Monthly Salary - ${worker.name}`
-      );
-
-      if (!wageEntry) return; // No wage entry to update
-
-      // Get all production records for this worker in current month
-      const workerProduction = allData.filter(d =>
-        d.type === 'worker' &&
-        d.worker_id === worker.__backendId &&
-        d.date && d.date.substring(0, 7) === currentMonth
-      );
-
-      if (workerProduction.length === 0) {
-        // No work done this month, just delete the wage entry
-        await window.dataSdk.delete(wageEntry);
-        console.log(`Removed wage entry for ${worker.name} (no work done)`);
-        return;
-      }
-
-      // Calculate unique days worked
-      const daysWorked = new Set(workerProduction.map(p => p.date)).size;
-      const workingDaysInMonth = 26; // Standard working days
-      const dailyWage = worker.monthly_wage / workingDaysInMonth;
-      const proratedSalary = Math.round(dailyWage * daysWorked);
-
-      // Update the household entry with prorated amount
-      const updatedEntry = {
-        ...wageEntry,
-        description: `Monthly Salary - ${worker.name} (${daysWorked} days worked - DELETED)`,
-        cost: proratedSalary
-      };
-
-      await window.dataSdk.update(updatedEntry);
-      console.log(`Updated wage for ${worker.name}: ${daysWorked} days × ₹${dailyWage.toFixed(2)} = ₹${proratedSalary}`);
-    }
-
-    // Toast notification
-    function showToast(message, type = 'info') {
-      const toast = document.createElement('div');
-      toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg text-white z-50 animate-fade-in ${type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-slate-700'}`;
-      toast.textContent = message;
-      document.body.appendChild(toast);
-
-      setTimeout(() => {
-        toast.remove();
-      }, 3000);
-    }
-
-    // Utility Functions
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text || '';
-      return div.innerHTML;
-    }
-
-    function formatDate(dateStr) {
-      if (!dateStr) return '-';
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
+// --- END OF updateAlerts ---
+  // ...existing code...
 
     function formatMonth(monthStr) {
       const [year, month] = monthStr.split('-');
@@ -8267,7 +8043,50 @@
     initApp();
     initNotificationSystem();
   </script>
-  <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9bb2cd6780ab7fad',t:'MTc2Nzk0OTgzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
-</body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      document.getElementById('user-name').textContent = user.fullName || user.username || 'User';
+      const badge = document.getElementById('user-role-badge');
+      if (user.role === 'user') {
+        badge.textContent = 'USER';
+        badge.classList.remove('bg-purple-600');
+        badge.classList.add('bg-blue-600');
+        // Hide all tabs except Production
+        const allowed = ['tab-workers'];
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          if (!allowed.includes(btn.id)) {
+            btn.style.display = 'none';
+          } else {
+            btn.style.display = '';
+          }
+        });
+        // Show only production tab content
+        document.querySelectorAll('.tab-content').forEach(tc => {
+          if (tc.id !== 'content-workers') tc.style.display = 'none';
+          else tc.style.display = '';
+        });
+        // Set production tab as active
+        document.getElementById('tab-workers').classList.add('tab-active');
+      }
 
+      // User menu toggle logic
+      const userMenuBtn = document.getElementById('user-menu-btn');
+      const userMenu = document.getElementById('user-menu');
+      if (userMenuBtn && userMenu) {
+        userMenuBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          userMenu.classList.toggle('hidden');
+        });
+        // Hide menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!userMenu.contains(e.target) && e.target !== userMenuBtn) {
+            userMenu.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+  <script src="/public/cloudflare-challenge.js"></script>
+</body>
 </html>
