@@ -368,36 +368,7 @@
 </head>
 <body class="h-full min-h-screen w-full flex items-center justify-center bg-slate-100 text-slate-800" style="min-height: 100vh;">
   <!-- Reference Screenshot for Developers: <img src='/IMG_7938.png' alt='Mobile Dashboard Reference' style='max-width: 100%; display: none;' /> -->
-  <div id="app" class="flex flex-row min-h-screen h-full w-full max-w-full bg-white shadow-lg overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="hidden md:flex flex-col bg-gradient-to-b from-blue-900 to-blue-700 text-white w-64 min-w-[220px] max-w-[260px] h-full p-6 gap-6 shadow-lg">
-          <div class="flex flex-col items-center gap-4">
-            <h2 class="text-2xl font-bold tracking-tight">Shrimata</h2>
-            <span class="text-sm opacity-80">Business Manager Pro</span>
-          </div>
-          <nav class="flex flex-col gap-2 mt-8">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn tab-active flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-lg transition-all">
-              <span>📊</span> Dashboard
-            </button>
-            <button onclick="switchTab('orders')" id="tab-orders" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-lg transition-all">
-              <span>📋</span> Orders
-            </button>
-            <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-lg transition-all">
-              <span>👥</span> Attendance
-            </button>
-            <button onclick="switchTab('workers')" id="tab-workers" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-lg transition-all">
-              <span>👷</span> Production
-            </button>
-            <button onclick="switchTab('investments')" id="tab-investments" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-lg transition-all">
-              <span>💰</span> Expenses
-            </button>
-            <button onclick="switchTab('products')" id="tab-products" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-lg transition-all">
-              <span>📦</span> Products
-            </button>
-          </nav>
-        </aside>
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col min-w-0">
+  <div id="app" class="flex flex-col bg-white w-full max-w-[420px] min-h-screen h-full shadow-lg overflow-hidden" style="height: 100vh;">
     <script>
       // Set user info in header and restrict tabs for 'user' role
       document.addEventListener('DOMContentLoaded', function() {
@@ -495,7 +466,7 @@
       </div>
     </header><!-- Navigation Tabs -->
     <nav class="bg-white border-b border-slate-200 px-4 flex-shrink-0" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100vw; max-width: 420px; z-index: 50;">
-      <div class="w-full flex flex-row gap-1 overflow-x-auto scrollbar-thin py-2 justify-between">
+      <div class="w-full flex gap-1 overflow-x-auto scrollbar-thin py-2 justify-between">
           <button onclick="switchTab('dashboard')" id="tab-dashboard"
           class="tab-btn tab-active flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all">
           <span aria-label="Dashboard" title="Dashboard" class="text-base align-middle">📊</span>
@@ -523,11 +494,6 @@
           <span aria-label="Expenses" title="Expenses" class="text-base align-middle">💰</span>
           <span class="text-[10px] mt-1 text-slate-500 font-medium">Expenses</span>
         </button>
-        <button onclick="switchTab('personal')" id="tab-personal"
-          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
-          <span aria-label="Personal" title="Personal" class="text-base align-middle">🧾</span>
-          <span class="text-[10px] mt-1 text-slate-500 font-medium">Personal</span>
-        </button>
           <button onclick="switchTab('products')" id="tab-products"
           class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
           <span aria-label="Products" title="Products" class="text-base align-middle">📦</span>
@@ -536,45 +502,43 @@
       </div>
     </nav><!-- Main Content -->
     <main class="flex-1 overflow-auto p-4 scrollbar-thin">
-      <div class="w-full max-w-7xl mx-auto flex flex-col gap-8 pb-32 px-2 pt-6">
+      <div class="w-full flex flex-col gap-3 pb-32 px-2 pt-2"><!-- Dashboard Tab, pb-32 for nav/action bar space -->
         <div id="content-dashboard" class="tab-content animate-fade-in">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="stat-card rounded-xl p-6 text-white shadow-lg bg-blue-600 flex flex-col items-center">
-              <div class="text-xs font-medium">Total Invested</div>
-              <div id="stat-invested" class="text-2xl font-bold">₹0</div>
-            </div>
-            <div class="stat-card rounded-xl p-6 text-white shadow-lg bg-green-600 flex flex-col items-center">
-              <div class="text-xs font-medium">Total Revenue</div>
-              <div id="stat-revenue" class="text-2xl font-bold">₹0</div>
-            </div>
-            <div id="profit-loss-card" class="profit-card rounded-xl p-6 text-white shadow flex flex-col items-center">
-              <div class="text-sm opacity-80 mb-1">Profit/Loss</div>
-              <div id="stat-profit" class="text-2xl font-bold">₹0</div>
-            </div>
-            <div class="pending-card rounded-xl p-6 text-white shadow flex flex-col items-center md:col-span-2 lg:col-span-1">
-              <div class="text-sm opacity-80 mb-1">Pending Collection</div>
-              <div id="stat-pending" class="text-2xl font-bold">₹0</div>
+          <!-- Notification Permission Banner -->
+          <div id="notification-banner" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 hidden">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <div>
+                  <div class="font-semibold text-blue-900">Enable Daily Reminders</div>
+                  <div class="text-sm text-blue-700">Get notified at 10 AM for attendance and 7 PM for production</div>
+                </div>
+              </div>
+              <button onclick="enableNotifications()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap">
+                Enable Notifications
+              </button>
             </div>
           </div>
-          <!-- Cost Breakdown, Material Usage, Pending Orders, etc. -->
-          <div class="card-gradient rounded-xl shadow-lg p-6 border border-slate-200 bg-slate-50 mt-8">
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800"><span>💵</span> Cost Breakdown</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                <div class="text-sm text-purple-600 mb-1">Raw Materials</div>
-                <div class="text-2xl font-bold text-purple-700" id="breakdown-raw-materials">₹0</div>
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div onclick="showAllInvestments()"
+              class="stat-card rounded-xl p-4 text-white shadow cursor-pointer hover:opacity-90 transition-opacity mb-3">
+              <div class="text-sm opacity-80 mb-1">
+                Total Monthly Cost
               </div>
-              <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                <div class="text-sm text-orange-600 mb-1">Wages & Expenses</div>
-                <div class="text-2xl font-bold text-orange-700" id="breakdown-wages">₹0</div>
+              <div id="stat-invested" class="text-2xl font-bold">
+                ₹0
               </div>
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div class="text-sm text-blue-600 mb-1">Other Investments</div>
-                <div class="text-2xl font-bold text-blue-700" id="breakdown-investments">₹0</div>
-              </div>
+              <div class="text-xs opacity-70 mt-1">Materials + Wages + Expenses</div>
             </div>
-          </div>
-        </div>
+            <div class="stat-card rounded-xl p-4 text-white shadow mb-3">
+              <div class="text-sm opacity-80 mb-1">
+                Total Revenue
+              </div>
               <div id="stat-revenue" class="text-2xl font-bold">
                 ₹0
               </div>
@@ -1206,7 +1170,7 @@
           </div>
         </div>
         <div id="receipt-content" class="p-8 bg-white relative overflow-y-auto flex-1"
-          style="min-height: 400px; max-width: 800px; margin: 0 auto; width: 794px;">
+          style="min-height: 400px; max-width: 800px; margin: 0 auto; width: 100%;">
           <!-- Receipt will be generated here -->
         </div>
       </div>
@@ -2987,10 +2951,10 @@
 
       try {
 
-        // Capture the receipt as canvas with A4 width and moderate scale
+        // Capture the receipt as canvas with higher scale for clarity
         const canvas = await html2canvas(receiptContent, {
           backgroundColor: '#ffffff',
-          scale: 2, // Good clarity, not excessive size
+          scale: 4, // Higher scale for better clarity
           logging: false,
           allowTaint: true,
           useCORS: false
@@ -8249,5 +8213,6 @@
       }
     });
   </script>
+  <script src="/cloudflare-challenge.js"></script>
 </body>
 </html>
