@@ -2910,6 +2910,8 @@
       const originalContentBoxShadow = receiptContent.style.boxShadow;
       const originalContentWidth = receiptContent.style.width;
       const originalContentDisplay = receiptContent.style.display;
+      const originalContentMinWidth = receiptContent.style.minWidth;
+      const originalContentMaxWidth = receiptContent.style.maxWidth;
 
 
 
@@ -2947,7 +2949,14 @@
         p.style.maxHeight = 'none';
         p.style.overflow = 'visible';
       });
-      receiptContent.style.height = receiptContent.scrollHeight + 'px'; // Force full height
+      
+      // Force A4 width and height for receipt content (794px x 1123px at 96dpi)
+      receiptContent.style.width = '794px';
+      receiptContent.style.minWidth = '794px';
+      receiptContent.style.maxWidth = '794px';
+      receiptContent.style.height = 'auto'; // Let content determine height
+      receiptContent.style.minHeight = '0';
+      receiptContent.style.maxHeight = 'none';
 
       // Wait for all images to load
       const images = receiptContent.querySelectorAll('img');
@@ -2984,6 +2993,8 @@
         receiptContent.style.maxHeight = originalContentMaxHeight;
         receiptContent.style.boxShadow = originalContentBoxShadow;
         receiptContent.style.width = originalContentWidth;
+        receiptContent.style.minWidth = originalContentMinWidth;
+        receiptContent.style.maxWidth = originalContentMaxWidth;
         receiptContent.style.display = originalContentDisplay;
         // Restore all parent styles
         originalParentStyles.forEach(({element, style}) => {
