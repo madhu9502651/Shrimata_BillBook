@@ -12,6 +12,8 @@ const { initializeAdmin } = require('./utils/initAdmin');
 const shareReceiptRoutes = require('./routes/shareReceipt');
 
 const app = express();
+// Trust first proxy (needed for Render/Heroku/Cloud)
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
