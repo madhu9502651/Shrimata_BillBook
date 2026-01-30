@@ -1,3 +1,23 @@
+
+<script>
+// Global deleteItem for investments/household
+function deleteItem(id) {
+  if (!confirm('Delete this record?')) return;
+  api.deleteRecord(id).then(() => {
+    if (typeof loadDataFromBackend === 'function') {
+      loadDataFromBackend().then(() => {
+        showToast('Deleted', 'success');
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof renderInvestments === 'function') renderInvestments();
+      });
+    } else {
+      showToast('Deleted', 'success');
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof renderInvestments === 'function') renderInvestments();
+    }
+  }).catch(err => showToast(err.message, 'error'));
+}
+</script>
 <!doctype html>
 <html lang="en" class="h-full">
 
@@ -504,6 +524,16 @@
           class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
           <span aria-label="Expenses" title="Expenses" class="text-base align-middle">💰</span>
           <span class="text-[10px] mt-1 text-slate-500 font-medium">Expenses</span>
+        </button>
+        <button onclick="switchTab('personal')" id="tab-personal"
+          class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
+          <span aria-label="Personal" title="Personal" class="text-base align-middle">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="7" r="4" stroke-width="2"/>
+              <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5.5 21a7.5 7.5 0 0113 0"/>
+            </svg>
+          </span>
+          <span class="text-[10px] mt-1 text-slate-500 font-medium">Personal</span>
         </button>
           <button onclick="switchTab('products')" id="tab-products"
           class="tab-btn flex-1 flex flex-col items-center justify-center px-1 py-2 rounded-lg font-medium text-xl whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200">
@@ -1048,6 +1078,31 @@
           </div>
         </div>
       </div>
+    <div id="content-personal" class="tab-content hidden animate-fade-in mt-0 pt-0 mb-0">
+      <div class="flex justify-between items-center mt-0 pt-0 mb-0">
+        <h2 class="text-xl font-bold mt-0 pt-0 mb-0">Personal Expenses</h2>
+        <button class="btn-primary px-4 py-2 rounded-lg font-medium mt-0 pt-0 mb-0" onclick="openModal('personal_expense')">Add Personal Expense</button>
+      </div>
+      <div class="card-gradient rounded-xl shadow-lg border border-slate-200 overflow-hidden mt-0 pt-0 mb-0">
+        <div class="overflow-x-auto scrollbar-thin mt-0 pt-0 mb-0">
+          <table class="min-w-full bg-white border border-slate-200 rounded-lg">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700">
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Amount</th>
+                <th class="px-4 py-2 text-left">Due Date</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="personal-expenses-table-body">
+              <!-- Personal expenses will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Personal Expense Modal removed: now uses shared modal -->
+    </div>
     </main><!-- Modal -->
     <div id="modal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90%] overflow-auto animate-fade-in">
@@ -5575,6 +5630,7 @@
 
       modal.classList.remove('hidden');
     }
+    window.openModal = openModal;
 
     // Wage Calculator Functions
     function toggleWageCalculator() {
@@ -8235,6 +8291,177 @@
       }
     });
   </script>
+  <script>
+  // --- Personal Expenses Add Logic ---
+
+  // Add Personal Expense modal logic using shared modal
+  </script>
+  <script>
+// --- Personal Expenses Table Logic ---
+function renderPersonalExpensesTable() {
+  api.getData('personal_expense').then(response => {
+    const records = response.data || [];
+    const tbody = document.getElementById('personal-expenses-table-body');
+    tbody.innerHTML = '';
+    if (!records.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-6">No personal expenses found.</td></tr>';
+      return;
+    }
+    records.forEach(exp => {
+      const tr = document.createElement('tr');
+      tr.className = exp.settled ? 'opacity-50' : '';
+      tr.innerHTML = `
+        <td class="px-4 py-2">${exp.name}</td>
+        <td class="px-4 py-2">₹${exp.amount.toFixed(2)}</td>
+        <td class="px-4 py-2">${exp.dueDate ? new Date(exp.dueDate).toLocaleDateString() : ''}</td>
+        <td class="px-4 py-2">${exp.settled ? '<span class=\"text-green-600\">Settled</span>' : '<span class=\"text-orange-500\">Pending</span>'}</td>
+        <td class="px-4 py-2 flex gap-2">
+          <button onclick="editPersonalExpense('${exp._id}')" class="text-blue-600 hover:text-blue-800 transition-colors" title="Edit">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+          </button>
+          <button onclick="deletePersonalExpense('${exp._id}')" class="text-red-600 hover:text-red-800 transition-colors" title="Delete">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+          ${!exp.settled ? `<button onclick="settlePersonalExpense('${exp._id}', true)" class="text-green-600 hover:text-green-800 transition-colors" title="Mark as Settled">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </button>` : `<button onclick="settlePersonalExpense('${exp._id}', false)" class="text-orange-600 hover:text-orange-800 transition-colors" title="Mark as Unsettled">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </button>`}
+          <button onclick="${exp.addedToCompany ? `window.removePersonalFromCompany('${exp._id}')` : `addPersonalToCompany('${exp._id}')`}" class="${exp.addedToCompany ? 'text-gray-400' : 'text-amber-600'} hover:text-amber-800 transition-colors" title="${exp.addedToCompany ? 'Remove from Company Expense' : 'Add to Company Expense'}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m-4-4h8"/>
+            </svg>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  // Remove from company expense
+window.removePersonalFromCompany = function(id) {
+  api.getRecord(id).then(res => {
+    const exp = res.data;
+    if (!exp.addedToCompany) {
+      showToast('Not added to company expenses', 'info');
+      return;
+    }
+    // Remove the investment record created from this personal expense
+    api.getData('investment').then(response => {
+      const investments = response.data || [];
+      const inv = investments.find(i => i.fromPersonalId === exp._id);
+      if (!inv) {
+        showToast('No linked company expense found', 'info');
+        return;
+      }
+      api.deleteRecord(inv._id).then(() => {
+        exp.addedToCompany = false;
+        api.updateRecord(id, exp).then(() => {
+          showToast('Removed from company expenses', 'success');
+          if (typeof loadDataFromBackend === 'function') {
+            loadDataFromBackend().then(() => {
+              renderPersonalExpensesTable();
+              if (typeof renderAll === 'function') renderAll();
+              if (typeof renderStats === 'function') renderStats();
+              if (typeof renderInvestments === 'function') renderInvestments();
+              // Force investments tab to update before showing
+              setTimeout(() => {
+                if (typeof showAllInvestments === 'function') showAllInvestments();
+              }, 100);
+            });
+          } else {
+            renderPersonalExpensesTable();
+            if (typeof renderAll === 'function') renderAll();
+            if (typeof renderStats === 'function') renderStats();
+            if (typeof renderInvestments === 'function') renderInvestments();
+            setTimeout(() => {
+              if (typeof showAllInvestments === 'function') showAllInvestments();
+            }, 100);
+          }
+        });
+      });
+    });
+  });
+}
+  }).catch(err => {
+    showToast('Failed to load personal expenses', 'error');
+  });
+}
+
+// Move these functions to global scope
+function editPersonalExpense(id) {
+  api.getRecord(id).then(res => {
+    openModal('personal_expense', res.data);
+  });
+}
+
+function deletePersonalExpense(id) {
+  if (!confirm('Delete this personal expense?')) return;
+  api.deleteRecord(id).then(() => {
+    showToast('Deleted', 'success');
+    renderPersonalExpensesTable();
+  }).catch(err => showToast(err.message, 'error'));
+}
+
+function settlePersonalExpense(id, settle) {
+  api.getRecord(id).then(res => {
+    const exp = res.data;
+    exp.settled = !!settle;
+    api.updateRecord(id, exp).then(() => {
+      showToast(settle ? 'Marked as settled' : 'Marked as pending', 'success');
+      renderPersonalExpensesTable();
+    });
+  });
+}
+
+function addPersonalToCompany(id) {
+    api.getRecord(id).then(res => {
+      const exp = res.data;
+      if (exp.addedToCompany) {
+        showToast('Already added to company expenses', 'info');
+        return;
+      }
+      // Create a new investment record for company expenses
+      const companyExpense = {
+        type: 'investment',
+        name: `[Personal] ${exp.name}`,
+        item: `[Personal] ${exp.name}`,
+        cost: exp.amount,
+        description: `Transferred from personal expense (${exp._id})`,
+        fromPersonalId: exp._id,
+        date: exp.dueDate || new Date().toISOString()
+      };
+      api.createRecord(companyExpense).then((resp) => {
+        exp.addedToCompany = true;
+        api.updateRecord(id, exp).then(() => {
+          showToast('Added to company expenses', 'success');
+          renderPersonalExpensesTable();
+          if (typeof loadDataFromBackend === 'function') {
+            loadDataFromBackend().then(() => {
+              if (typeof renderAll === 'function') renderAll();
+              if (typeof showAllInvestments === 'function') showAllInvestments();
+            });
+          } else {
+            if (typeof renderAll === 'function') renderAll();
+            if (typeof showAllInvestments === 'function') showAllInvestments();
+          }
+        });
+      });
+    });
+}
+// Render table when Personal tab is shown
+const personalTabBtn = document.querySelector('[data-tab="personal"]') || document.querySelector('#tab-personal');
+if (personalTabBtn) {
+  personalTabBtn.addEventListener('click', renderPersonalExpensesTable);
+}
+</script>
   <script src="/cloudflare-challenge.js"></script>
 </body>
 </html>
